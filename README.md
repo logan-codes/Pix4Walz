@@ -15,7 +15,10 @@ Features
 - **Payment Gateway:** Integrated Stripe or PayPal for secure transactions.
 
 ## Installation
-- Clone the repository:git clone https://github.com/logan-codes/Pix4Walz.git
+- Clone the repository:
+  ```
+  git clone https://github.com/logan-codes/Pix4Walz.git 
+  ```
 
 - Navigate to the project directory:cd polaroids-posters
 
