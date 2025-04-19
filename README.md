@@ -20,10 +20,15 @@ Features
   git clone https://github.com/logan-codes/Pix4Walz.git 
   ```
 
-- Navigate to the project directory:cd polaroids-posters
+- Navigate to the project directory:
+  ```
+  cd polaroids-posters
+  ```
 
-- Install dependencies:npm install
-
+- Install dependencies:
+```
+npm install
+```
 
 ## Usage
 - Start the development server:npm start
