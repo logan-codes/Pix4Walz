@@ -21,7 +21,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-white mt-3 pt-3 text-start text-gray-300 text-sm ">
-          <div className="flex items-center justify-start flex-wrap"> 
+          <div className="flex items-center justify-center lg:justify-start flex-wrap"> 
             <p>&copy; {new Date().getFullYear()} Piz4Walz</p>
             <Dot size={10} className="mx-2 text-gray-300" />
             <Link to="/privacy-policy" className="text-gray-300 hover:text-white hover:underline ">
