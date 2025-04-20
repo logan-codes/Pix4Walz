@@ -26,17 +26,23 @@ Features
   ```
 
 - Install dependencies:
-```
-npm install
-```
+  ```
+  npm install
+  ```
 
 ## Usage
-- Start the development server:npm start
+- Start the development server:
+  ```
+  npm start
+  ```
 
 - Open your browser and navigate to http://localhost:3000 to explore the website locally.
 
 ## Deployment
-- Build the application:npm run build
+- Build the application:
+  ```
+  npm run build
+  ```
 
 - Use deployment services like Vercel or Netlify for hosting the project.
 
