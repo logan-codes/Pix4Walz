@@ -1,60 +1,52 @@
 "use client";
 
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    number: '',
-    message: ''
+    name: "",
+    number: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState('');
+  const [submitStatus, setSubmitStatus] = useState("");
 
-  const handleChange = (e:any) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.number || !formData.message) {
-      setSubmitStatus('Please fill in all fields');
+      setSubmitStatus("Please fill in all fields");
       return;
     }
-    
+
     setIsSubmitting(true);
-    setSubmitStatus('');
-    const payload= {
-          name: formData.name,
-          number: formData.number,
-          message: formData.message,
-          timestamp: new Date().toISOString()
-        }
+    setSubmitStatus("");
+
     try {
-      const backend_url = import.meta.env.VITE_BACKEND_URL
-      const response = await axios.post(`${backend_url}/contact-us`, payload,{
-        headers: {
-          "Content-Type": "application/json"
-        }
+      const payload = {
+        ...formData,
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await axios.post("/api/contact-us", payload, {
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (response) {
-        setSubmitStatus('Message sent successfully! We\'ll get back to you soon.');
-        setFormData({ name: '', number: '', message: '' });
-        
-        // Optional: Show success for 5 seconds then clear
-        setTimeout(() => setSubmitStatus(''), 5000);
+      if (response.data.success) {
+        setSubmitStatus("Message sent successfully! We'll get back to you soon.");
+        setFormData({ name: "", number: "", message: "" });
+        setTimeout(() => setSubmitStatus(""), 5000);
       } else {
-        setSubmitStatus('Failed to send message. Please try again.');
+        setSubmitStatus("Failed to send message. Please try again.");
       }
     } catch (error) {
-      console.error('Error:', error);
-      setSubmitStatus('Error sending message. Please try again later.');
+      console.error("Error:", error);
+      setSubmitStatus("Error sending message. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,18 +61,15 @@ export default function ContactPage() {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               We're here for you
             </h1>
-            <p className="text-gray-600 mb-8">
-              Our friendly team is always here to chat.
-            </p>
+            <p className="text-gray-600 mb-8">Our friendly team is always here to chat.</p>
 
-            <div className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Your name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -90,11 +79,11 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Your number <span className="text-red-500">*</span>
                 </label>
                 <input
-                  id="number"
+                  type="text"
                   name="number"
                   value={formData.number}
                   onChange={handleChange}
@@ -104,11 +93,10 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Your message <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
@@ -119,34 +107,33 @@ export default function ContactPage() {
               </div>
 
               {submitStatus && (
-                <div className={`p-4 rounded-md ${
-                  submitStatus.includes('successfully') 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : submitStatus.includes('Error') || submitStatus.includes('Failed')
-                    ? 'bg-red-50 text-red-800 border border-red-200'
-                    : 'bg-yellow-50 text-yellow-800 border border-yellow-200'
-                }`}>
+                <div
+                  className={`p-4 rounded-md ${
+                    submitStatus.includes("successfully")
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : submitStatus.includes("Error") || submitStatus.includes("Failed")
+                      ? "bg-red-50 text-red-800 border border-red-200"
+                      : "bg-yellow-50 text-yellow-800 border border-yellow-200"
+                  }`}
+                >
                   {submitStatus}
                 </div>
               )}
 
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isSubmitting}
                 className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-8 rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Sending...' : 'Submit'}
+                {isSubmitting ? "Sending..." : "Submit"}
               </button>
-            </div>
+            </form>
           </div>
 
-          {/* Store Location & Setup Instructions */}
+          {/* Store Info */}
           <div className="space-y-6">
             <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Store Location
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Store Location</h2>
               <p className="text-gray-700 leading-relaxed">
                 3/183 NAVAMARATHUPATTI, SULLERUMBU POST, DINDIGUL, Tamilnadu 624710.
               </p>

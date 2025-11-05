@@ -1,5 +1,5 @@
+"use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -14,18 +14,26 @@ const TagsSection: React.FC = () => {
   const [isloading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching JSON
-    const fetchTags = async () => {
-    const backend_url = import.meta.env.VITE_BACKEND_URL;
+  const fetchTags = async () => {
     setLoading(true);
     try {
-      const response = await axios.get<string[]>(`${backend_url}/products/tags`);
-      if (Array.isArray(response.data)) {
-        setTags(response.data);
+      const response = await fetch("/api/categories");
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        // Extract only the category names
+        const tagNames = data.map((item) => item.name);
+        setTags(tagNames);
       } else {
         throw new Error("Response is not an array");
       }
     } catch (error) {
+      console.error("Error fetching tags:", error);
       toast("Error loading tags");
     } finally {
       setLoading(false);
@@ -33,7 +41,7 @@ const TagsSection: React.FC = () => {
   };
 
   fetchTags();
-  }, []);
+}, []);
 
   return (
     <div className="sticky top-16 z-10 w-64">
