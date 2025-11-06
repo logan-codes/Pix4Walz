@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Pix4Walz",
   description: "Your destination for stunning polaroids and posters.",
   icons: {
-    icon:"/logo.jpg"
-  } 
+    icon: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -26,6 +27,7 @@ export default function RootLayout({
         </main>
 
         <Footer />
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

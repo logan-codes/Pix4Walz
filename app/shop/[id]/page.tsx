@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ShoppingCart, Heart} from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
+import { AspectRatio } from "@radix-ui/react-aspect-ratio";
 
 interface Product {
     id: number;
@@ -53,12 +54,14 @@ export default function ProductPage() {
     return (
         <div className="max-w-6xl mx-auto py-10 px-6 grid md:grid-cols-2 gap-10">
         {/* Product Image */}
-        <div className="relative w-full h-[450px] rounded-2xl overflow-hidden bg-gray-100">
+        <div className="w-full rounded-2xl overflow-hidden bg-gray-100">
+            <AspectRatio ratio={1}>
             <img
-            src={product.image}
-            alt={product.name}
-            className="object-contain"
+                src={product.image}
+                alt={product.name}
+                className="object-cover w-full h-full"
             />
+            </AspectRatio>
         </div>
 
         {/* Product Details */}
