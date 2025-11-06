@@ -6,7 +6,7 @@ export default function ShopPage() {
   return (
     <div className="flex gap-6 p-6">
       {/* Left Sidebar - Tags (Sticky) */}
-      <aside className="flex-shrink-0 sticky top-16 self-start">
+      <aside className="shrink-0 sticky top-16 self-start">
         <TagsSection/>
       </aside>
       

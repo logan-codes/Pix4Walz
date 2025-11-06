@@ -86,7 +86,7 @@ const BestSellingSection: React.FC = () => {
               ? Array.from({ length: visibleCount }).map((_, index) => (
                   <div
                     key={index}
-                    className="relative w-64 flex-shrink-0 border rounded-lg overflow-hidden shadow animate-pulse"
+                    className="relative w-64 shrink-0 border rounded-lg overflow-hidden shadow animate-pulse"
                   >
                     <div className="w-full h-48 bg-gray-300"></div>
                     <div className="p-4 space-y-3">
@@ -105,7 +105,7 @@ const BestSellingSection: React.FC = () => {
                   <div
                     key={product.id}
                     onClick={() => router.push(`/shop/${product.id}`)}
-                    className="relative w-64 flex-shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
+                    className="relative w-64 shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
                   >
                     {product.sale && !product.outOfStock && (
                       <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs px-2 py-1 rounded z-10">

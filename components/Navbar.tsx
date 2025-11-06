@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
           </div>
           
           {/* Logo */}
-          <div className="flex-shrink-0 text-2xl font-bold text-gray-800">
+          <div className="shrink-0 text-2xl font-bold text-gray-800">
             Pix4Walz
           </div>
 
