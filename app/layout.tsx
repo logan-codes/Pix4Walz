@@ -6,6 +6,9 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Pix4Walz",
   description: "Your destination for stunning polaroids and posters.",
+  icons: {
+    icon:"/logo.jpg"
+  } 
 };
 
 export default function RootLayout({

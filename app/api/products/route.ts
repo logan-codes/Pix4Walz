@@ -6,11 +6,27 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q") || "";
     const sort = searchParams.get("sort") || "default";
+    const id = searchParams.get("id");
 
     let orderBy: any = {};
     if (sort === "price-low") orderBy = { salePrice: "asc" };
     else if (sort === "price-high") orderBy = { salePrice: "desc" };
     else if (sort === "name") orderBy = { name: "asc" };
+
+    if (id) {
+      const product = await prisma.products.findUnique({
+        where: { id: Number(id) },
+      });
+
+      if (!product) {
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(product);
+    }
 
     const products = await prisma.products.findMany({
       where: {

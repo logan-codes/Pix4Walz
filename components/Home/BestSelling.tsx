@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Heart, ArrowLeft, ArrowRight } from "lucide-react";
-import axios from "axios";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface BestSellingProduct {
   id: number;
@@ -21,6 +21,7 @@ const BestSellingSection: React.FC = () => {
   const [isLoading, setLoading] = useState(false);
   const [bestSellingProducts, setBestSellingProducts] = useState<BestSellingProduct[]>([]);
   const visibleCount = 5;
+  const router = useRouter();
 
   const handlePrev = () => {
     if (isAnimating) return;
@@ -44,9 +45,10 @@ const BestSellingSection: React.FC = () => {
     const fetchBestSelling = async () => {
       setLoading(true);
       try {
-        const response = await axios.get<BestSellingProduct[]>("/api/best-selling");
-        if (Array.isArray(response.data)) {
-          setBestSellingProducts(response.data);
+        const response = await fetch("api/best-selling");
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setBestSellingProducts(data);
         } else {
           throw new Error("Response is not an array");
         }
@@ -102,7 +104,8 @@ const BestSellingSection: React.FC = () => {
               : bestSellingProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="relative w-64 flex-shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300"
+                    onClick={() => router.push(`/shop/${product.id}`)}
+                    className="relative w-64 flex-shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
                   >
                     {product.sale && !product.outOfStock && (
                       <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs px-2 py-1 rounded z-10">
@@ -117,12 +120,10 @@ const BestSellingSection: React.FC = () => {
                     <img
                       src={product.image}
                       alt={product.title}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="p-4">
-                      <div className="text-gray-500 text-xs">
-                        {product.subtitle}
-                      </div>
+                      <div className="text-gray-500 text-xs">{product.subtitle}</div>
                       <h3 className="font-bold text-lg">{product.title}</h3>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="line-through text-gray-400">
@@ -131,12 +132,21 @@ const BestSellingSection: React.FC = () => {
                         <span className="font-semibold text-orange-500">
                           ₹{product.discountedPrice}
                         </span>
-                        <button className="ml-auto p-2 rounded-full bg-gray-200 hover:bg-gray-300">
+                        <button
+                          onClick={(e) => e.stopPropagation()} // prevent navigating when heart is clicked
+                          className="ml-auto p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+                        >
                           <Heart size={18} />
                         </button>
                       </div>
                       {!product.outOfStock && (
-                        <button className="mt-4 w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            router.push(`/shop/${product.id}`);
+                          }}
+                          className="mt-4 w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition"
+                        >
                           Buy Now
                         </button>
                       )}

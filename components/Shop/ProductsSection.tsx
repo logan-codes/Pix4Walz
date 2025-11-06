@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Heart, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Breadcrumb,
@@ -41,6 +42,7 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -124,7 +126,7 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((p) => (
-              <div key={p.id} className="group relative">
+              <div key={p.id} onClick= {()=>{router.push(`/shop/${p.id}`)}}className="group relative">
                 <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square mb-4">
                   <img
                     src={p.image}
