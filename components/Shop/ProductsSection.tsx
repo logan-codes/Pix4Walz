@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Heart, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
 
 interface ProductsSectionProps {
   page?: string;
+  category?: string | null;
 }
 
 interface Product {
@@ -36,13 +37,15 @@ interface Product {
   outOfStock?: boolean;
 }
 
-export default function ProductsSection({ page = "Store" }: ProductsSectionProps) {
+export default function ProductsSection({ page = "Store", category }: ProductsSectionProps) {
   const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
+  const PAGE_SIZE = 9;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -52,13 +55,26 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
           q: searchQuery,
           sort: sortBy,
           page: currentPage.toString(),
+          limit: PAGE_SIZE.toString(),
         });
+
+        if (category) {
+          params.set("category", category);
+        }
 
         const res = await fetch(`/api/products?${params.toString()}`);
         const data = await res.json();
 
-        if (Array.isArray(data)) setProducts(data);
-        else throw new Error("Invalid response format");
+        if (Array.isArray(data?.items)) {
+          setProducts(data.items);
+          const incomingTotal =
+            typeof data.totalPages === "number" && data.totalPages > 0
+              ? data.totalPages
+              : 1;
+          setTotalPages(incomingTotal);
+        } else {
+          throw new Error("Invalid response format");
+        }
       } catch (err) {
         toast("Error loading products");
       } finally {
@@ -67,7 +83,29 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
     };
 
     fetchProducts();
-  }, [searchQuery, sortBy, currentPage]);
+  }, [searchQuery, sortBy, currentPage, category]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category]);
+
+  const visiblePageNumbers = (() => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages = new Set<number>([
+      1,
+      totalPages,
+      currentPage,
+      currentPage - 1,
+      currentPage + 1,
+    ]);
+
+    return Array.from(pages)
+      .filter((p) => p >= 1 && p <= totalPages)
+      .sort((a, b) => a - b);
+  })();
 
   return (
     <div className="bg-white rounded-lg">
@@ -89,7 +127,14 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
       {/* Header */}
       <div className="sticky top-28 z-10 bg-white px-4 sm:px-6 lg:px-8 py-8 border-b">
         <div className="flex justify-between items-center">
-          <h1 className="text-5xl font-bold text-gray-900">{page}</h1>
+          <div>
+            <h1 className="text-5xl font-bold text-gray-900">{page}</h1>
+            {category && (
+              <p className="mt-1 text-sm text-gray-500">
+                Showing results for <span className="font-semibold">{category}</span>
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center gap-8">
             <div className="relative">
@@ -179,30 +224,43 @@ export default function ProductsSection({ page = "Store" }: ProductsSectionProps
                   className={currentPage === 1 ? "opacity-50 pointer-events-none" : ""}
                 />
               </PaginationItem>
-              {[1, 2, 3].map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(page);
-                    }}
-                    isActive={currentPage === page}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
+              {visiblePageNumbers.map((pageNumber, index) => {
+                const previous = visiblePageNumbers[index - 1];
+                const needsEllipsis =
+                  previous !== undefined && pageNumber - previous > 1;
+
+                return (
+                  <Fragment key={pageNumber}>
+                    {needsEllipsis && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                    <PaginationItem>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(pageNumber);
+                        }}
+                        isActive={currentPage === pageNumber}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </Fragment>
+                );
+              })}
               <PaginationItem>
                 <PaginationNext
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage < 3) setCurrentPage(currentPage + 1);
+                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                   }}
+                  className={
+                    currentPage === totalPages ? "opacity-50 pointer-events-none" : ""
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

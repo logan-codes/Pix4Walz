@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPopover() {
   const [open, setOpen] = useState(false);
@@ -23,12 +24,21 @@ export default function LoginPopover() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with your actual auth logic
-      await new Promise((r) => setTimeout(r, 1000));
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        throw error;
+      }
       toast.success("Logged in successfully!");
+      setEmail("");
+      setPassword("");
       setOpen(false);
-    } catch {
-      toast.error("Login failed");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to login right now.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -56,12 +66,14 @@ export default function LoginPopover() {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <Input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
 
@@ -77,7 +89,9 @@ export default function LoginPopover() {
 
         <p className="text-center text-sm text-gray-500 mt-2">
           Don’t have an account?{" "}
-          <span className="text-orange-500 cursor-pointer hover:underline">Sign up</span>
+          <span className="text-orange-500 cursor-pointer hover:underline">
+            Sign up
+          </span>
         </p>
       </DialogContent>
     </Dialog>

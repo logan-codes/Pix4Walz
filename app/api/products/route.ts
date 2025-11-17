@@ -7,6 +7,12 @@ export async function GET(req: Request) {
     const query = searchParams.get("q") || "";
     const sort = searchParams.get("sort") || "default";
     const id = searchParams.get("id");
+    const category = searchParams.get("category");
+    const pageParam = searchParams.get("page");
+    const limitParam = searchParams.get("limit");
+
+    const page = Math.max(Number(pageParam) || 1, 1);
+    const limit = Math.max(Number(limitParam) || 9, 1);
 
     let orderBy: any = {};
     if (sort === "price-low") orderBy = { salePrice: "asc" };
@@ -28,17 +34,41 @@ export async function GET(req: Request) {
       return NextResponse.json(product);
     }
 
-    const products = await prisma.products.findMany({
-      where: {
+    const where: any = {
+      name: {
+        contains: query,
+        mode: "insensitive",
+      },
+    };
+
+    if (category) {
+      where.category = {
         name: {
-          contains: query,
+          equals: category,
           mode: "insensitive",
         },
-      },
-      orderBy: orderBy && Object.keys(orderBy).length ? orderBy : undefined,
-    });
+      };
+    }
 
-    return NextResponse.json(products);
+    const [products, totalCount] = await Promise.all([
+      prisma.products.findMany({
+      where,
+      orderBy: orderBy && Object.keys(orderBy).length ? orderBy : undefined,
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.products.count({ where }),
+    ]);
+
+    const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
+
+    return NextResponse.json({
+      items: products,
+      totalCount,
+      totalPages,
+      page,
+      limit,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });

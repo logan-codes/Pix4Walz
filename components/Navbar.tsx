@@ -1,9 +1,43 @@
 'use client';
-import React, { useState } from "react";
-import { Menu, X, Search, Heart, ShoppingCart, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Menu, X, Heart, ShoppingCart, User as UserIcon, LogOut } from "lucide-react";
+import LoginPopover from "./LoginPopover";
+import SignupPopover from "./SignupPopover";
+import { supabase } from "@/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    const fetchSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    };
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    unsubscribe = data.subscription.unsubscribe;
+    fetchSession();
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const navLinks = [
   {
@@ -22,12 +56,6 @@ const Navbar: React.FC = () => {
     href: "/contact"
   }
 ];
-  const iconLinks = [
-    { icon: <User size={20} />, label: "Login" },
-    { icon: <Heart size={20} />, label: "Favorites" },
-    { icon: <ShoppingCart size={20} />, label: "Cart" },
-  ];
-
   return (
     <nav className="w-screen bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,17 +88,44 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Right Icons */}
-          <div className=" sm:flex items-center space-x-4">
-            {iconLinks.map(({ icon, label }) => (
-              <button
-                key={label}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-                aria-label={label}
-              >
-                {icon}
-              </button>
-            ))}
+          {/* Auth Section */}
+          <div className="flex items-center gap-3">
+            {authLoading ? (
+              <div className="w-24 h-8 rounded-full bg-gray-200 animate-pulse" />
+            ) : user ? (
+              <>
+                <button
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Profile"
+                >
+                  <UserIcon size={20} />
+                </button>
+                <button
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Favorites"
+                >
+                  <Heart size={20} />
+                </button>
+                <button
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  aria-label="Cart"
+                >
+                  <ShoppingCart size={20} />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-full hover:bg-gray-100 transition text-red-500"
+                  aria-label="Logout"
+                >
+                  <LogOut size={20} />
+                </button>
+              </>
+            ) : (
+              <>
+                <LoginPopover />
+                <SignupPopover />
+              </>
+            )}
           </div>
 
         </div>

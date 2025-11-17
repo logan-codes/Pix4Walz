@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SignupPopover() {
   const [open, setOpen] = useState(false);
@@ -28,12 +29,22 @@ export default function SignupPopover() {
     }
     setLoading(true);
     try {
-      // TODO: Replace with your Supabase or API call
-      await new Promise((r) => setTimeout(r, 1000));
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (error) {
+        throw error;
+      }
       toast.success("Account created successfully!");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
       setOpen(false);
-    } catch {
-      toast.error("Signup failed");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Unable to sign up right now.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -61,18 +72,21 @@ export default function SignupPopover() {
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <Input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
           <Input
             type="password"
             placeholder="Confirm password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            required
           />
         </div>
 
@@ -88,7 +102,9 @@ export default function SignupPopover() {
 
         <p className="text-center text-sm text-gray-500 mt-2">
           Already have an account?{" "}
-          <span className="text-orange-500 cursor-pointer hover:underline">Login</span>
+          <span className="text-orange-500 cursor-pointer hover:underline">
+            Login
+          </span>
         </p>
       </DialogContent>
     </Dialog>

@@ -6,52 +6,63 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
-const TagsSection: React.FC = () => {
+interface TagsSectionProps {
+  selectedTag: string | null;
+  onSelect: (tag: string | null) => void;
+}
+
+const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
   const [tags, setTags] = useState<string[]>([]);
-  const [isloading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-  const fetchTags = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/categories");
+    const fetchTags = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/categories");
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          const tagNames = data.map((item) => item.name);
+          setTags(tagNames);
+        } else {
+          throw new Error("Response is not an array");
+        }
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+        toast("Error loading tags");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await response.json();
+    fetchTags();
+  }, []);
 
-      if (Array.isArray(data)) {
-        // Extract only the category names
-        const tagNames = data.map((item) => item.name);
-        setTags(tagNames);
-      } else {
-        throw new Error("Response is not an array");
-      }
-    } catch (error) {
-      console.error("Error fetching tags:", error);
-      toast("Error loading tags");
-    } finally {
-      setLoading(false);
+  const handleClick = (tag: string | null) => {
+    if (selectedTag === tag) {
+      onSelect(null);
+    } else {
+      onSelect(tag);
     }
   };
 
-  fetchTags();
-}, []);
-
   return (
     <div className="sticky top-16 z-10 w-64">
-      <Accordion type="single" collapsible>
+      <Accordion type="single" collapsible defaultValue="item-1">
         <AccordionItem value="item-1">
-          <AccordionTrigger>Tags</AccordionTrigger>
+          <AccordionTrigger>Categories</AccordionTrigger>
           <AccordionContent>
             <div className="flex flex-wrap gap-2">
-              {isloading ? (
-                // Skeleton Loader
+              {isLoading ? (
                 Array.from({ length: 8 }).map((_, index) => (
                   <div
                     key={index}
@@ -59,16 +70,25 @@ const TagsSection: React.FC = () => {
                   />
                 ))
               ) : (
-                tags.map((tag, index) => (
+                <>
                   <Badge
-                    key={index}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-gray-300 transition-colors"
-                    onClick={() => console.log(`Clicked tag: ${tag}`)}
+                    variant={selectedTag ? "secondary" : "default"}
+                    className="cursor-pointer"
+                    onClick={() => handleClick(null)}
                   >
-                    {tag}
+                    All
                   </Badge>
-                ))
+                  {tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant={selectedTag === tag ? "default" : "secondary"}
+                      className="cursor-pointer hover:bg-gray-300 transition-colors"
+                      onClick={() => handleClick(tag)}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </>
               )}
             </div>
           </AccordionContent>
@@ -78,4 +98,4 @@ const TagsSection: React.FC = () => {
   );
 };
 
-export default TagsSection
+export default TagsSection;
