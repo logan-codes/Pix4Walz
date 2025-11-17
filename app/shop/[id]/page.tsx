@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ShoppingCart, Heart} from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { AspectRatio } from "@radix-ui/react-aspect-ratio";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 interface Product {
     id: number;
@@ -13,6 +16,7 @@ interface Product {
     salePrice: number;
     originalPrice: number;
     category: string[];
+    outOfStock?: boolean;
 }
 
 export default function ProductPage() {
@@ -20,6 +24,8 @@ export default function ProductPage() {
     const  pathname  = usePathname();
     const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState<Product>();
+    const { user: wishlistUser, wishlistIds, toggleWishlist, pendingProductId } = useWishlist();
+    const { user: cartUser, addToCart, pendingProductId: pendingCartProductId } = useCart();
 
     useEffect(() => {
     const fetchProduct = async () => {
@@ -79,8 +85,30 @@ export default function ProductPage() {
             </div>
 
             {/* Wishlist */}
-            <button className="flex items-center gap-2 text-gray-600 mb-5 hover:text-red-500">
-            <Heart size={20} />
+            <button
+              type="button"
+              className="flex items-center gap-2 text-gray-600 mb-5 hover:text-red-500 transition"
+              onClick={async () => {
+                if (!product) return;
+                if (!wishlistUser) {
+                  toast("Please log in to save items");
+                  return;
+                }
+                try {
+                  await toggleWishlist(product.id);
+                } catch {
+                  /* handled */
+                }
+              }}
+              disabled={pendingProductId === product.id}
+            >
+              <Heart
+                size={20}
+                className={wishlistIds.has(product.id) ? "text-red-500 fill-red-500" : ""}
+              />
+              <span>
+                {wishlistIds.has(product.id) ? "Remove from wishlist" : "Add to wishlist"}
+              </span>
             </button>
 
             {/* Quantity Selector */}
@@ -102,9 +130,35 @@ export default function ProductPage() {
 
             {/* Buttons */}
             <div className="flex gap-4 mb-6">
-            <button className="flex items-center gap-2 bg-orange-500 text-white px-6 py-3 rounded-full hover:bg-orange-600 transition">
+            <button
+              type="button"
+              disabled={product.outOfStock || pendingCartProductId === product.id}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full transition ${
+                product.outOfStock
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-orange-500 text-white hover:bg-orange-600"
+              }`}
+              onClick={async () => {
+                if (!product || product.outOfStock) return;
+                if (!cartUser) {
+                  toast("Please log in to add items to cart");
+                  return;
+                }
+                try {
+                  await addToCart(product.id, quantity);
+                } catch {
+                  /* handled */
+                }
+              }}
+            >
                 <ShoppingCart size={20} />
-                <span>Add To Cart</span>
+                <span>
+                  {product.outOfStock
+                    ? "Out of Stock"
+                    : pendingCartProductId === product.id
+                      ? "Adding..."
+                      : "Add To Cart"}
+                </span>
             </button>
             </div>
 

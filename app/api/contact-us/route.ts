@@ -1,6 +1,6 @@
 // app/api/contact-us/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getSupabaseServerClient } from "@/lib/supabaseServer";
 
 export async function POST(request: Request) {
   try {
@@ -11,17 +11,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Save message using Prisma ORM
-    const newMessage = await prisma.userMessage.create({
-      data: {
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("UserMessage")
+      .insert({
         name,
         number,
         message,
         timestamp: timestamp || new Date().toISOString(),
-      },
-    });
+      })
+      .select()
+      .single();
 
-    return NextResponse.json({ success: true, data: newMessage });
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("Error saving contact message:", error);
     return NextResponse.json({ error: "Failed to send message" }, { status: 500 });

@@ -1,10 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import TagsSection from "@/components/Shop/TagsSection";
 import ProductsSection from "@/components/Shop/ProductsSection";
 
 export default function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   return (
     <div className="flex gap-6 p-6">

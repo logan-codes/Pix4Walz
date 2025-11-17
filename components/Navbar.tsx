@@ -5,11 +5,13 @@ import LoginPopover from "./LoginPopover";
 import SignupPopover from "./SignupPopover";
 import { supabase } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -97,18 +99,21 @@ const Navbar: React.FC = () => {
                 <button
                   className="p-2 rounded-full hover:bg-gray-100 transition"
                   aria-label="Profile"
+                  onClick={() => router.push("/profile")}
                 >
                   <UserIcon size={20} />
                 </button>
                 <button
                   className="p-2 rounded-full hover:bg-gray-100 transition"
                   aria-label="Favorites"
+                  onClick={() => router.push("/wishlist")}
                 >
                   <Heart size={20} />
                 </button>
                 <button
                   className="p-2 rounded-full hover:bg-gray-100 transition"
                   aria-label="Cart"
+                  onClick={() => router.push("/cart")}
                 >
                   <ShoppingCart size={20} />
                 </button>

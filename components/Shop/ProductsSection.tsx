@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
-import { Heart, Search } from "lucide-react";
+import { Fragment, useState, useEffect, MouseEvent } from "react";
+import { Heart, Search, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -21,6 +21,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/hooks/useCart";
 
 interface ProductsSectionProps {
   page?: string;
@@ -46,6 +48,17 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
   const PAGE_SIZE = 9;
+  const {
+    user: wishlistUser,
+    wishlistIds,
+    pendingProductId,
+    toggleWishlist,
+  } = useWishlist();
+  const {
+    user: cartUser,
+    addToCart,
+    pendingProductId: pendingCartProductId,
+  } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -88,6 +101,38 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
   useEffect(() => {
     setCurrentPage(1);
   }, [category]);
+
+  const handleWishlistToggle = async (
+    e: MouseEvent<HTMLButtonElement>,
+    productId: number
+  ) => {
+    e.stopPropagation();
+    if (!wishlistUser) {
+      toast("Please log in to use wishlist");
+      return;
+    }
+    try {
+      await toggleWishlist(productId);
+    } catch {
+      /* errors handled in hook */
+    }
+  };
+
+  const handleAddToCart = async (
+    e: MouseEvent<HTMLButtonElement>,
+    productId: number
+  ) => {
+    e.stopPropagation();
+    if (!cartUser) {
+      toast("Please log in to add items to your cart");
+      return;
+    }
+    try {
+      await addToCart(productId, 1);
+    } catch {
+      /* handled */
+    }
+  };
 
   const visiblePageNumbers = (() => {
     if (totalPages <= 5) {
@@ -188,8 +233,22 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                       OUT OF STOCK
                     </div>
                   )}
-                  <button className="absolute bottom-4 right-4 bg-gray-800 text-white p-3 rounded-full hover:bg-gray-700 transition-colors">
-                    <Heart size={18} />
+                  <button
+                    type="button"
+                    className="absolute bottom-4 right-4 bg-white text-gray-800 p-3 rounded-full hover:bg-gray-100 transition-colors shadow"
+                    aria-label="Toggle wishlist"
+                    aria-pressed={wishlistIds.has(p.id)}
+                    onClick={(e) => handleWishlistToggle(e, p.id)}
+                    disabled={pendingProductId === p.id}
+                  >
+                    <Heart
+                      size={18}
+                      className={
+                        wishlistIds.has(p.id)
+                          ? "text-red-500 fill-red-500"
+                          : "text-gray-700"
+                      }
+                    />
                   </button>
                 </div>
                 <div>
@@ -203,6 +262,28 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                     <span className="text-gray-900 font-semibold text-lg">
                       ₹{p.salePrice.toFixed(2)}
                     </span>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      className="flex-1 rounded-full bg-gray-900 text-white py-2 text-sm font-semibold hover:bg-gray-800 transition disabled:opacity-60"
+                      onClick={(e) => handleAddToCart(e, p.id)}
+                      disabled={pendingCartProductId === p.id || p.outOfStock}
+                    >
+                      {p.outOfStock ? "Out of stock" : "Add to cart"}
+                    </button>
+                    <button
+                      type="button"
+                      className="p-2 rounded-full border border-gray-200 hover:bg-gray-100 transition disabled:opacity-60"
+                      onClick={(e) => handleAddToCart(e, p.id)}
+                      aria-label="Quick add to cart"
+                      disabled={pendingCartProductId === p.id || p.outOfStock}
+                    >
+                      <ShoppingCart
+                        size={18}
+                        className={p.outOfStock ? "text-gray-400" : "text-gray-700"}
+                      />
+                    </button>
                   </div>
                 </div>
               </div>

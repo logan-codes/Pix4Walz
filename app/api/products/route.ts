@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getSupabaseServerClient } from "@/lib/supabaseServer";
+
+const PRODUCTS_TABLE = "Products";
+const CATEGORIES_TABLE = "Categories";
 
 export async function GET(req: Request) {
   try {
@@ -7,63 +10,87 @@ export async function GET(req: Request) {
     const query = searchParams.get("q") || "";
     const sort = searchParams.get("sort") || "default";
     const id = searchParams.get("id");
-    const category = searchParams.get("category");
+    const rawCategory = searchParams.get("category");
     const pageParam = searchParams.get("page");
     const limitParam = searchParams.get("limit");
 
     const page = Math.max(Number(pageParam) || 1, 1);
     const limit = Math.max(Number(limitParam) || 9, 1);
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    let orderBy: any = {};
-    if (sort === "price-low") orderBy = { salePrice: "asc" };
-    else if (sort === "price-high") orderBy = { salePrice: "desc" };
-    else if (sort === "name") orderBy = { name: "asc" };
+    const supabase = getSupabaseServerClient();
 
     if (id) {
-      const product = await prisma.products.findUnique({
-        where: { id: Number(id) },
-      });
+      const { data: product, error } = await supabase
+        .from(PRODUCTS_TABLE)
+        .select("*")
+        .eq("id", Number(id))
+        .maybeSingle();
 
+      if (error) throw error;
       if (!product) {
-        return NextResponse.json(
-          { error: "Product not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Product not found" }, { status: 404 });
       }
-
       return NextResponse.json(product);
     }
 
-    const where: any = {
-      name: {
-        contains: query,
-        mode: "insensitive",
-      },
-    };
+    let categoryId: number | undefined;
+    const categoryName = rawCategory?.trim();
 
-    if (category) {
-      where.category = {
-        name: {
-          equals: category,
-          mode: "insensitive",
-        },
-      };
+    if (categoryName) {
+      const { data: category, error } = await supabase
+        .from(CATEGORIES_TABLE)
+        .select("id")
+        .ilike("name", categoryName)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!category) {
+        return NextResponse.json({
+          items: [],
+          totalCount: 0,
+          totalPages: 1,
+          page,
+          limit,
+        });
+      }
+      categoryId = category.id;
     }
 
-    const [products, totalCount] = await Promise.all([
-      prisma.products.findMany({
-      where,
-      orderBy: orderBy && Object.keys(orderBy).length ? orderBy : undefined,
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.products.count({ where }),
-    ]);
+    let productsQuery = supabase.from(PRODUCTS_TABLE).select("*", { count: "exact" });
 
+    if (query) {
+      productsQuery = productsQuery.ilike("name", `%${query}%`);
+    }
+
+    if (categoryId) {
+      productsQuery = productsQuery.eq("category_id", categoryId);
+    }
+
+    let orderColumn = "id";
+    let ascending = true;
+    if (sort === "price-low") {
+      orderColumn = "salePrice";
+      ascending = true;
+    } else if (sort === "price-high") {
+      orderColumn = "salePrice";
+      ascending = false;
+    } else if (sort === "name") {
+      orderColumn = "name";
+      ascending = true;
+    }
+
+    productsQuery = productsQuery.order(orderColumn, { ascending }).range(from, to);
+
+    const { data, count, error } = await productsQuery;
+    if (error) throw error;
+
+    const totalCount = count ?? 0;
     const totalPages = Math.max(Math.ceil(totalCount / limit), 1);
 
     return NextResponse.json({
-      items: products,
+      items: data ?? [],
       totalCount,
       totalPages,
       page,

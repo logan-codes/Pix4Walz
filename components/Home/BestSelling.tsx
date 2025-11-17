@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Heart, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface BestSellingProduct {
   id: number;
@@ -22,6 +23,7 @@ const BestSellingSection: React.FC = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState<BestSellingProduct[]>([]);
   const visibleCount = 5;
   const router = useRouter();
+  const { user, wishlistIds, toggleWishlist, pendingProductId } = useWishlist();
 
   const handlePrev = () => {
     if (isAnimating) return;
@@ -133,10 +135,31 @@ const BestSellingSection: React.FC = () => {
                           ₹{product.discountedPrice}
                         </span>
                         <button
-                          onClick={(e) => e.stopPropagation()} // prevent navigating when heart is clicked
-                          className="ml-auto p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+                          className="ml-auto p-2 rounded-full bg-white shadow hover:bg-gray-100 transition"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!user) {
+                              toast("Please log in to use wishlist");
+                              return;
+                            }
+                            try {
+                              await toggleWishlist(product.id);
+                            } catch {
+                              /* handled in hook */
+                            }
+                          }}
+                          aria-pressed={wishlistIds.has(product.id)}
+                          aria-label="Toggle wishlist"
+                          disabled={pendingProductId === product.id}
                         >
-                          <Heart size={18} />
+                          <Heart
+                            size={18}
+                            className={
+                              wishlistIds.has(product.id)
+                                ? "text-red-500 fill-red-500"
+                                : "text-gray-700"
+                            }
+                          />
                         </button>
                       </div>
                       {!product.outOfStock && (

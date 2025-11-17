@@ -1,5 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -17,6 +19,8 @@ interface TagsSectionProps {
 const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
   const [tags, setTags] = useState<string[]>([]);
   const [isLoading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -47,11 +51,31 @@ const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
     fetchTags();
   }, []);
 
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      onSelect(categoryParam);
+    }
+  }, [onSelect, searchParams]);
+
+  const updateUrl = (tag: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tag) {
+      params.set("category", tag);
+    } else {
+      params.delete("category");
+    }
+    const query = params.toString();
+    router.replace(query ? `/shop?${query}` : "/shop", { scroll: false });
+  };
+
   const handleClick = (tag: string | null) => {
     if (selectedTag === tag) {
       onSelect(null);
+      updateUrl(null);
     } else {
       onSelect(tag);
+      updateUrl(tag);
     }
   };
 

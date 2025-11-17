@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Category {
   id: number;
@@ -14,6 +15,7 @@ interface Category {
 const CategoriesSection: React.FC = () => {
   const [isLoading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -69,7 +71,10 @@ const CategoriesSection: React.FC = () => {
                 </div>
 
                 <div className="absolute bottom-6 left-6">
-                  <button className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 transform group-hover:scale-105 shadow-lg">
+                  <button
+                    className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 transform group-hover:scale-105 shadow-lg"
+                    onClick={() => router.push(`/shop?category=${encodeURIComponent(cat.name)}`)}
+                  >
                     Shop Now
                     <ArrowRight
                       size={18}

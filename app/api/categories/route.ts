@@ -1,23 +1,20 @@
 // app/api/categories/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getSupabaseServerClient } from "@/lib/supabaseServer";
 
 export async function GET() {
   try {
-    const categories = await prisma.categories.findMany({
-      orderBy: { id: "asc" },
-      select: {
-        id: true,
-        name: true,
-        image: true,
-      },
-    });
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("Categories")
+      .select("id,name,image")
+      .order("id", { ascending: true });
 
-    return NextResponse.json(categories);
+    if (error) throw error;
+
+    return NextResponse.json(data ?? []);
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
