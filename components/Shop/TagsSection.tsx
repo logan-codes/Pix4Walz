@@ -80,12 +80,12 @@ const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
   };
 
   return (
-    <div className="sticky top-16 z-10 w-64">
+    <div className="w-full md:w-64 md:sticky md:top-16 z-10">
       <Accordion type="single" collapsible defaultValue="item-1">
         <AccordionItem value="item-1">
           <AccordionTrigger>Categories</AccordionTrigger>
           <AccordionContent>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 flex-wrap md:flex-wrap overflow-x-auto py-2">
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, index) => (
                   <div
@@ -97,7 +97,7 @@ const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
                 <>
                   <Badge
                     variant={selectedTag ? "secondary" : "default"}
-                    className="cursor-pointer"
+                    className="cursor-pointer inline-flex whitespace-nowrap"
                     onClick={() => handleClick(null)}
                   >
                     All
@@ -106,7 +106,7 @@ const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
                     <Badge
                       key={tag}
                       variant={selectedTag === tag ? "default" : "secondary"}
-                      className="cursor-pointer hover:bg-gray-300 transition-colors"
+                      className="cursor-pointer inline-flex whitespace-nowrap hover:bg-gray-300 transition-colors"
                       onClick={() => handleClick(tag)}
                     >
                       {tag}

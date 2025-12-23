@@ -7,12 +7,12 @@ import { useWishlist } from "@/hooks/useWishlist";
 
 interface BestSellingProduct {
   id: number;
-  title: string;
+  name: string;
   subtitle: string;
   originalPrice: number;
-  discountedPrice: number;
+  salePrice: number;
   image: string;
-  sale?: boolean;
+  onSale?: boolean;
   outOfStock?: boolean;
 }
 
@@ -109,7 +109,7 @@ const BestSellingSection: React.FC = () => {
                     onClick={() => router.push(`/shop/${product.id}`)}
                     className="relative w-64 shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
                   >
-                    {product.sale && !product.outOfStock && (
+                    {product.onSale && !product.outOfStock && (
                       <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs px-2 py-1 rounded z-10">
                         SALE!
                       </span>
@@ -121,19 +121,27 @@ const BestSellingSection: React.FC = () => {
                     )}
                     <img
                       src={product.image}
-                      alt={product.title}
+                      alt={product.name}
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="p-4">
                       <div className="text-gray-500 text-xs">{product.subtitle}</div>
-                      <h3 className="font-bold text-lg">{product.title}</h3>
+                      <h3 className="font-bold text-lg">{product.name}</h3>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="line-through text-gray-400">
-                          ₹{product.originalPrice}
-                        </span>
-                        <span className="font-semibold text-orange-500">
-                          ₹{product.discountedPrice}
-                        </span>
+                        {product.onSale ? (
+                          <div>
+                            <span className="line-through text-gray-400">
+                              ₹{product.originalPrice}
+                            </span>
+                            <span className="font-semibold text-orange-500 ml-1">
+                              ₹{product.salePrice}
+                            </span>
+                          </div>): (
+                            <span className="font-semibold text-orange-500">
+                              ₹{product.originalPrice}
+                            </span>
+                          )
+                        }
                         <button
                           className="ml-auto p-2 rounded-full bg-white shadow hover:bg-gray-100 transition"
                           onClick={async (e) => {

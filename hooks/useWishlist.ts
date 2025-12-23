@@ -103,6 +103,8 @@ export function useWishlist() {
       setPendingProductId(productId);
 
       try {
+        console.log("user.id:", user?.id, "productId:", productId);
+
         const res = await fetch("/api/wishlist", {
           method: isFavorite ? "DELETE" : "POST",
           headers: {
@@ -110,7 +112,7 @@ export function useWishlist() {
           },
           body: JSON.stringify({
             supabaseId: user.id,
-            productId,
+            productId: productId,
             email: user.email,
           }),
         });

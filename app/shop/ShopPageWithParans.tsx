@@ -16,8 +16,8 @@ export default function ShopPageWithParams() {
   }, [searchParams]);
 
   return (
-    <div className="flex gap-6 p-6">
-      <aside className="shrink-0 sticky top-16 self-start">
+    <div className="flex flex-col md:flex-row gap-6 p-4 md:p-6">
+      <aside className="w-full md:w-64 md:shrink-0 md:sticky md:top-16 md:self-start mb-4 md:mb-0">
         <TagsSection
           selectedTag={selectedCategory}
           onSelect={setSelectedCategory}

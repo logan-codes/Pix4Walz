@@ -32,9 +32,15 @@ export async function getOrCreateProfile(
   }
 
   const supabase = getSupabaseServerClient();
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("UserProfile")
-    .insert({ supabaseId, email })
+    .insert({ 
+      supabaseId, 
+      email,
+      createdAt: now,
+      updatedAt: now,
+    })
     .select()
     .single();
 

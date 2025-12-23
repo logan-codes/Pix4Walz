@@ -1,176 +1,179 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
-import { getOrCreateProfile, getProfileBySupabaseId } from "@/lib/profileServer";
+import { getOrCreateProfile } from "@/lib/profileServer";
 
-const TABLE = "CartItem";
+//
+// Helper: map Supabase Auth UUID to UserProfile integer id
+//
+async function getUserProfileId(supabaseId: string, email?: string | null) {
+  const profile = await getOrCreateProfile(supabaseId, email);
+  return profile?.id ?? null;
+}
 
+//
+// 🚀 GET /api/cart
+//
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const supabaseId = searchParams.get("supabaseId");
     const email = searchParams.get("email");
 
-    if (!supabaseId) {
-      return NextResponse.json(
-        { error: "supabaseId query parameter is required" },
-        { status: 400 }
-      );
-    }
+    if (!supabaseId) return NextResponse.json({ items: [] });
 
-    const profile = await getOrCreateProfile(supabaseId, email);
-    if (!profile) {
-      return NextResponse.json({ items: [] });
-    }
+    const userId = await getUserProfileId(supabaseId, email);
+    if (!userId) return NextResponse.json({ items: [] });
 
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
-      .from(TABLE)
+      .from("CartItem")
       .select("*, product:Products(*)")
-      .eq("userId", profile.id)
+      .eq("userId", userId)
       .order("createdAt", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error(error);
+      return NextResponse.json({ items: [] }, { status: 500 });
+    }
 
-    return NextResponse.json({ items: data ?? [] });
-  } catch (error) {
-    console.error("Error fetching cart:", error);
-    return NextResponse.json({ error: "Failed to fetch cart" }, { status: 500 });
+    return NextResponse.json({ items: data || [] });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ items: [] }, { status: 500 });
   }
 }
 
+//
+// 🚀 POST /api/cart → add item
+//
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { supabaseId, email, productId, quantity = 1 } = body;
+    const { supabaseId, productId, quantity = 1, email } = await req.json();
 
     if (!supabaseId || !productId) {
-      return NextResponse.json(
-        { error: "supabaseId and productId are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const profile = await getOrCreateProfile(supabaseId, email);
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
+    const userId = await getUserProfileId(supabaseId, email);
+    if (!userId) return NextResponse.json({ error: "Profile not found" }, { status: 400 });
 
     const supabase = getSupabaseServerClient();
-
-    const { data: existing, error: existingError } = await supabase
-      .from(TABLE)
-      .select("*, product:Products(*)")
-      .match({ userId: profile.id, productId: Number(productId) })
+    // Check if cart item already exists
+    const { data: existing } = await supabase
+      .from("CartItem")
+      .select("*")
+      .eq("userId", userId)
+      .eq("productId", productId)
       .maybeSingle();
 
-    if (existingError && existingError.code !== "PGRST116") {
-      throw existingError;
-    }
+    let insertedId: number;
 
     if (existing) {
-      const newQuantity = existing.quantity + Number(quantity || 1);
+      // Update quantity
       const { data, error } = await supabase
-        .from(TABLE)
-        .update({ quantity: newQuantity })
+        .from("CartItem")
+        .update({ quantity: existing.quantity + quantity })
         .eq("id", existing.id)
-        .select("*, product:Products(*)")
+        .select("id")
         .single();
+
       if (error) throw error;
-      return NextResponse.json(data);
+      insertedId = data.id;
+    } else {
+      // Insert new cart item
+      const { data, error } = await supabase
+        .from("CartItem")
+        .insert({ userId, productId, quantity })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+      insertedId = data.id;
     }
 
-    const { data, error } = await supabase
-      .from(TABLE)
-      .insert({
-        userId: profile.id,
-        productId: Number(productId),
-        quantity: Number(quantity),
-      })
+    // Return full joined item
+    const { data: item, error: fetchError } = await supabase
+      .from("CartItem")
       .select("*, product:Products(*)")
+      .eq("id", insertedId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return NextResponse.json(item);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to add to cart" }, { status: 500 });
+  }
+}
+
+//
+// 🚀 PUT /api/cart → update quantity
+//
+export async function PUT(req: Request) {
+  try {
+    const { supabaseId, productId, quantity, email } = await req.json();
+
+    if (!supabaseId || !productId || quantity == null) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const userId = await getUserProfileId(supabaseId, email);
+    if (!userId) return NextResponse.json({ error: "Profile not found" }, { status: 400 });
+
+    const supabase = getSupabaseServerClient();
+    if (quantity <= 0) {
+      // Remove item
+      await supabase.from("CartItem").delete().eq("userId", userId).eq("productId", productId);
+      return NextResponse.json({ success: true });
+    }
+
+    // Update quantity
+    const { data: updated, error } = await supabase
+      .from("CartItem")
+      .update({ quantity })
+      .eq("userId", userId)
+      .eq("productId", productId)
+      .select("id")
       .single();
 
     if (error) throw error;
 
-    return NextResponse.json(data, { status: 201 });
-  } catch (error) {
-    console.error("Error updating cart:", error);
-    return NextResponse.json({ error: "Failed to update cart" }, { status: 500 });
-  }
-}
-
-export async function PUT(req: Request) {
-  try {
-    const body = await req.json();
-    const { supabaseId, productId, quantity } = body;
-
-    if (!supabaseId || !productId || typeof quantity !== "number") {
-      return NextResponse.json(
-        { error: "supabaseId, productId, and quantity are required" },
-        { status: 400 }
-      );
-    }
-
-    const profile = await getProfileBySupabaseId(supabaseId);
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
-
-    const supabase = getSupabaseServerClient();
-
-    if (quantity <= 0) {
-      await supabase
-        .from(TABLE)
-        .delete()
-        .match({ userId: profile.id, productId: Number(productId) });
-      return NextResponse.json({ success: true });
-    }
-
-    const { data, error } = await supabase
-      .from(TABLE)
-      .update({ quantity })
-      .match({ userId: profile.id, productId: Number(productId) })
+    const { data: item, error: fetchError } = await supabase
+      .from("CartItem")
       .select("*, product:Products(*)")
-      .maybeSingle();
+      .eq("id", updated.id)
+      .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
 
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Error modifying cart:", error);
-    return NextResponse.json({ error: "Failed to modify cart" }, { status: 500 });
+    return NextResponse.json(item);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to update cart item" }, { status: 500 });
   }
 }
 
+//
+// 🚀 DELETE /api/cart → remove item
+//
 export async function DELETE(req: Request) {
   try {
-    const body = await req.json();
-    const { supabaseId, productId } = body;
+    const { supabaseId, productId, email } = await req.json();
 
     if (!supabaseId || !productId) {
-      return NextResponse.json(
-        { error: "supabaseId and productId are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const profile = await getProfileBySupabaseId(supabaseId);
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
+    const userId = await getUserProfileId(supabaseId, email);
+    if (!userId) return NextResponse.json({ error: "Profile not found" }, { status: 400 });
 
     const supabase = getSupabaseServerClient();
-
-    const { error } = await supabase
-      .from(TABLE)
-      .delete()
-      .match({ userId: profile.id, productId: Number(productId) });
-
-    if (error) throw error;
+    await supabase.from("CartItem").delete().eq("userId", userId).eq("productId", productId);
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error removing cart item:", error);
-    return NextResponse.json({ error: "Failed to remove item" }, { status: 500 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to remove cart item" }, { status: 500 });
   }
 }
-

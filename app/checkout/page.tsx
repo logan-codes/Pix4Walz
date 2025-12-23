@@ -31,6 +31,36 @@ export default function CheckoutPage() {
     refreshCart();
   }, [refreshCart]);
 
+  // Fetch and autofill profile data
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchProfile = async () => {
+      try {
+        const params = new URLSearchParams({
+          supabaseId: user.id,
+        });
+        if (user.email) {
+          params.append("email", user.email);
+        }
+
+        const res = await fetch(`/api/profile?${params.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profile) {
+            setFullName(data.profile.name ?? "");
+            setPhone(data.profile.phone ?? "");
+            setAddress(data.profile.address ?? "");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
+
   const subtotal = useMemo(
     () =>
       items.reduce((sum, item) => {

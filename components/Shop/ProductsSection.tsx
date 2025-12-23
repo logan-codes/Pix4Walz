@@ -39,7 +39,10 @@ interface Product {
   outOfStock?: boolean;
 }
 
-export default function ProductsSection({ page = "Store", category }: ProductsSectionProps) {
+export default function ProductsSection({
+  page = "Store",
+  category,
+}: ProductsSectionProps) {
   const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -154,42 +157,35 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
 
   return (
     <div className="bg-white rounded-lg">
-      {/* Breadcrumb */}
-      <div className="sticky top-16 z-10 bg-white px-4 sm:px-6 lg:px-8 py-4 border-b">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{page}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      
 
       {/* Header */}
-      <div className="sticky top-28 z-10 bg-white px-4 sm:px-6 lg:px-8 py-8 border-b">
-        <div className="flex justify-between items-center">
+      <div className="sticky top-16 z-10 bg-white px-4 sm:px-6 lg:px-8 py-4 border-b">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-5xl font-bold text-gray-900">{page}</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+              {page}
+            </h1>
             {category && (
               <p className="mt-1 text-sm text-gray-500">
-                Showing results for <span className="font-semibold">{category}</span>
+                Showing results for{" "}
+                <span className="font-semibold">{category}</span>
               </p>
             )}
           </div>
 
-          <div className="flex items-center gap-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+            <div className="relative w-full sm:w-auto max-w-xs">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 w-64"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 w-full"
               />
             </div>
 
@@ -216,7 +212,13 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((p) => (
-              <div key={p.id} onClick= {()=>{router.push(`/shop/${p.id}`)}}className="group relative">
+              <div
+                key={p.id}
+                onClick={() => {
+                  router.push(`/shop/${p.id}`);
+                }}
+                className="group relative"
+              >
                 <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square mb-4">
                   <img
                     src={p.image}
@@ -256,12 +258,20 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                     {p.name}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-400 line-through text-sm">
-                      ₹{p.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="text-gray-900 font-semibold text-lg">
-                      ₹{p.salePrice.toFixed(2)}
-                    </span>
+                    {p.onSale ? (
+                      <div>
+                        <span className="text-gray-400 line-through text-sm">
+                          ₹{p.originalPrice.toFixed(2)}
+                        </span>
+                        <span className="text-gray-900 font-semibold text-lg ml-1">
+                          ₹{p.salePrice.toFixed(2)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-900 font-semibold text-lg">
+                        ₹{p.originalPrice.toFixed(2)}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-4 flex gap-2">
                     <button
@@ -281,7 +291,9 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                     >
                       <ShoppingCart
                         size={18}
-                        className={p.outOfStock ? "text-gray-400" : "text-gray-700"}
+                        className={
+                          p.outOfStock ? "text-gray-400" : "text-gray-700"
+                        }
                       />
                     </button>
                   </div>
@@ -302,7 +314,9 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                     e.preventDefault();
                     if (currentPage > 1) setCurrentPage(currentPage - 1);
                   }}
-                  className={currentPage === 1 ? "opacity-50 pointer-events-none" : ""}
+                  className={
+                    currentPage === 1 ? "opacity-50 pointer-events-none" : ""
+                  }
                 />
               </PaginationItem>
               {visiblePageNumbers.map((pageNumber, index) => {
@@ -337,10 +351,13 @@ export default function ProductsSection({ page = "Store", category }: ProductsSe
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    if (currentPage < totalPages)
+                      setCurrentPage(currentPage + 1);
                   }}
                   className={
-                    currentPage === totalPages ? "opacity-50 pointer-events-none" : ""
+                    currentPage === totalPages
+                      ? "opacity-50 pointer-events-none"
+                      : ""
                   }
                 />
               </PaginationItem>

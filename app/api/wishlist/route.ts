@@ -1,23 +1,25 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
-import { getOrCreateProfile, getProfileBySupabaseId } from "@/lib/profileServer";
+import { getOrCreateProfile } from "@/lib/profileServer";
+
+async function getUserProfileId(supabaseId: string, email?: string | null) {
+  const profile = await getOrCreateProfile(supabaseId, email);
+  return profile?.id ?? null;
+}
+
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+
     const supabaseId = searchParams.get("supabaseId");
     const email = searchParams.get("email");
-
     if (!supabaseId) {
-      return NextResponse.json(
-        { error: "supabaseId query parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ items: [] });
     }
 
-    const profile = await getOrCreateProfile(supabaseId, email);
-
-    if (!profile) {
+    const userProfileId = await getUserProfileId(supabaseId, email);
+    if (!userProfileId) {
       return NextResponse.json({ items: [] });
     }
 
@@ -25,97 +27,97 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from("WishlistItem")
       .select("*, product:Products(*)")
-      .eq("userId", profile.id)
+      .eq("userId", userProfileId)
       .order("createdAt", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error(error);
+      return NextResponse.json({ items: [] }, { status: 500 });
+    }
 
-    return NextResponse.json({ items: data ?? [] });
-  } catch (error) {
-    console.error("Error fetching wishlist:", error);
-    return NextResponse.json({ error: "Failed to fetch wishlist" }, { status: 500 });
+    return NextResponse.json({ items: data || [] });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ items: [] }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const { supabaseId, productId, email } = await req.json();
+    const body = await req.json();
+    const { supabaseId, productId, email } = body;
 
     if (!supabaseId || !productId) {
-      return NextResponse.json(
-        { error: "supabaseId and productId are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const profile = await getOrCreateProfile(supabaseId, email);
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    const userProfileId = await getUserProfileId(supabaseId, email);
+    if (!userProfileId) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 400 });
     }
 
     const supabase = getSupabaseServerClient();
-
-    const { data: existing, error: existingError } = await supabase
-      .from("WishlistItem")
-      .select("*, product:Products(*)")
-      .match({ userId: profile.id, productId: Number(productId) })
-      .maybeSingle();
-
-    if (existingError && existingError.code !== "PGRST116") {
-      throw existingError;
-    }
-
-    if (existing) {
-      return NextResponse.json(existing);
-    }
-
-    const { data: created, error } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from("WishlistItem")
       .insert({
-        userId: profile.id,
-        productId: Number(productId),
+        userId: userProfileId,
+        productId: productId,
       })
-      .select("*, product:Products(*)")
+      .select("id")
       .single();
 
-    if (error) throw error;
+    if (insertError) {
+      console.error(insertError);
+      return NextResponse.json({ error: "Insert failed" }, { status: 500 });
+    }
 
-    return NextResponse.json(created, { status: 201 });
-  } catch (error) {
-    console.error("Error adding to wishlist:", error);
-    return NextResponse.json({ error: "Failed to update wishlist" }, { status: 500 });
+    const { data: item, error: fetchError } = await supabase
+      .from("WishlistItem")
+      .select("*, product:Products(*)")
+      .eq("id", inserted.id)
+      .single();
+
+    if (fetchError) {
+      console.error(fetchError);
+      return NextResponse.json({ error: "Fetch after insert failed" }, { status: 500 });
+    }
+
+    return NextResponse.json(item);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
 export async function DELETE(req: Request) {
   try {
-    const { supabaseId, productId } = await req.json();
+    const body = await req.json();
+    const { supabaseId, productId, email } = body;
 
     if (!supabaseId || !productId) {
-      return NextResponse.json(
-        { error: "supabaseId and productId are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+
+    const userProfileId = await getUserProfileId(supabaseId, email);
+    if (!userProfileId) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 400 });
     }
 
     const supabase = getSupabaseServerClient();
-    const profile = await getProfileBySupabaseId(supabaseId);
-
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
-
     const { error } = await supabase
       .from("WishlistItem")
       .delete()
-      .match({ userId: profile.id, productId: Number(productId) });
+      .eq("userId", userProfileId)
+      .eq("productId", productId);
 
-    if (error) throw error;
+    if (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error removing from wishlist:", error);
-    return NextResponse.json({ error: "Failed to remove item" }, { status: 500 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
-
