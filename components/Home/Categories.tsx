@@ -5,6 +5,9 @@ import { ArrowRight } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface Category {
   id: number;
@@ -55,12 +58,17 @@ const CategoriesSection: React.FC = () => {
                   animation: `fadeIn 0.6s ease-out ${index * 0.1}s both`,
                 }}
               >
-                <div className="relative h-80 overflow-hidden">
-                  <img
+                <Link href={`/shop?category=${encodeURIComponent(cat.name)}`} className="absolute inset-0 z-10" aria-label={cat.name} />
+                <div className="relative h-40 overflow-hidden">
+                  <AspectRatio ratio={16 / 9}>
+                  <Image
+                    width={400}
+                    height={225}
                     src={cat.image}
                     alt={cat.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
+                  </AspectRatio>
                   <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
                 </div>
 
@@ -70,18 +78,7 @@ const CategoriesSection: React.FC = () => {
                   </h3>
                 </div>
 
-                <div className="absolute bottom-6 left-6">
-                  <button
-                    className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2.5 rounded-full transition-all duration-300 transform group-hover:scale-105 shadow-lg"
-                    onClick={() => router.push(`/shop?category=${encodeURIComponent(cat.name)}`)}
-                  >
-                    Shop Now
-                    <ArrowRight
-                      size={18}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </button>
-                </div>
+                
               </div>
             ))}
       </div>
