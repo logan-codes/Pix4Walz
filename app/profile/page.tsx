@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import LoginPopover from "@/components/LoginPopover";
 
 interface Profile {
   id: number;
@@ -43,6 +44,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
   const [formState, setFormState] = useState({
     name: "",
     phone: "",
@@ -66,6 +68,7 @@ export default function ProfilePage() {
       if (!session) {
         setAuthError("Please log in to view your profile.");
         setLoading(false);
+        setShowLogin(true);
         return;
       }
 
@@ -140,6 +143,14 @@ export default function ProfilePage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 text-center text-gray-600">
         <p>{authError}</p>
+          <div className="mt-6 flex justify-center">
+            <LoginPopover
+              open={showLogin}
+              onOpen={() => setShowLogin(true)}
+              onClose={() => setShowLogin(false)}
+              showTrigger={true}
+            />
+          </div>
       </div>
     );
   }
@@ -168,7 +179,9 @@ export default function ProfilePage() {
             <label className="text-sm font-medium text-gray-600">Name</label>
             <Input
               value={formState.name}
-              onChange={(e) => setFormState((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Jane Doe"
             />
           </div>
@@ -176,15 +189,21 @@ export default function ProfilePage() {
             <label className="text-sm font-medium text-gray-600">Phone</label>
             <Input
               value={formState.phone}
-              onChange={(e) => setFormState((prev) => ({ ...prev, phone: e.target.value }))}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, phone: e.target.value }))
+              }
               placeholder="+1 555 123 4567"
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-600">Shipping address</label>
+            <label className="text-sm font-medium text-gray-600">
+              Shipping address
+            </label>
             <textarea
               value={formState.address}
-              onChange={(e) => setFormState((prev) => ({ ...prev, address: e.target.value }))}
+              onChange={(e) =>
+                setFormState((prev) => ({ ...prev, address: e.target.value }))
+              }
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 min-h-[100px]"
               placeholder="Street, City, ZIP, Country"
             />
@@ -211,7 +230,9 @@ export default function ProfilePage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <p className="text-sm text-gray-500">Order #{order.orderNumber}</p>
+                    <p className="text-sm text-gray-500">
+                      Order #{order.orderNumber}
+                    </p>
                     <p className="text-sm text-gray-400">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </p>
@@ -247,4 +268,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

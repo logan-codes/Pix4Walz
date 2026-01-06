@@ -53,19 +53,19 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <div className="bg-white p-8 rounded-lg shadow-sm">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="bg-card p-8 rounded-lg shadow-sm">
+            <h1 className="text-4xl font-bold text-white mb-4">
               We're here for you
             </h1>
-            <p className="text-gray-600 mb-8">Our friendly team is always here to chat.</p>
+            <p className="text-gray-300 mb-8">Our friendly team is always here to chat.</p>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Your name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -79,7 +79,7 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Your number <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -93,7 +93,7 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-white mb-2">
                   Your message <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -132,9 +132,9 @@ export default function ContactPage() {
 
           {/* Store Info */}
           <div className="space-y-6">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Store Location</h2>
-              <p className="text-gray-700 leading-relaxed">
+            <div className="bg-card p-8 rounded-lg shadow-sm">
+              <h2 className="text-3xl font-bold text-white mb-6">Store Location</h2>
+              <p className="text-gray-300 leading-relaxed">
                 3/183 NAVAMARATHUPATTI, SULLERUMBU POST, DINDIGUL, Tamilnadu 624710.
               </p>
             </div>

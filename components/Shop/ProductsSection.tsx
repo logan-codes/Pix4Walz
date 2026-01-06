@@ -219,7 +219,7 @@ export default function ProductsSection({
                 }}
                 className="group relative"
               >
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square mb-4">
+                <div className="relative bg-accent rounded-lg overflow-hidden aspect-square mb-4">
                   <img
                     src={p.image}
                     alt={p.name}

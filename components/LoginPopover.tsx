@@ -4,19 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function LoginPopover() {
-  const [open, setOpen] = useState(false);
+type LoginPopoverProps = {
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  showTrigger?: boolean;
+};
+
+export default function LoginPopover({
+  open,
+  onOpen,
+  onClose,
+  showTrigger = true,
+}: LoginPopoverProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,13 +39,13 @@ export default function LoginPopover() {
         email,
         password,
       });
-      if (error) {
-        throw error;
-      }
+
+      if (error) throw error;
+
       toast.success("Logged in successfully!");
       setEmail("");
       setPassword("");
-      setOpen(false);
+      onClose(); // 👈 close dialog after login
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unable to login right now.";
@@ -45,16 +56,24 @@ export default function LoginPopover() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <LogIn size={18} /> Login
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={(v) => (v ? onOpen() : onClose())}>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={onOpen} // 👈 opens via parent state
+          >
+            <LogIn size={18} /> Login
+          </Button>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="max-w-sm p-6 rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl font-semibold">Login</DialogTitle>
+          <DialogTitle className="text-center text-xl font-semibold">
+            Login
+          </DialogTitle>
           <DialogDescription className="text-center text-gray-500">
             Enter your credentials to access your account
           </DialogDescription>

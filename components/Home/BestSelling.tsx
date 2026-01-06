@@ -107,7 +107,7 @@ const BestSellingSection: React.FC = () => {
                   <div
                     key={product.id}
                     onClick={() => router.push(`/shop/${product.id}`)}
-                    className="relative w-64 shrink-0 border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
+                    className="relative w-64 shrink-0 border rounded-2xl overflow-hidden shadow bg-card hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
                   >
                     {product.onSale && !product.outOfStock && (
                       <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs px-2 py-1 rounded z-10">

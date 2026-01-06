@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react";
+import LoginPopover from "@/components/LoginPopover";
+import { useState } from "react";
 
 export default function CartPage() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function CartPage() {
     updateQuantity,
     removeFromCart,
   } = useCart();
+  const [showLogin, setShowLogin] = useState(true);
 
   const subtotal = items.reduce((sum, item) => {
     const price = item.product?.salePrice ?? 0;
@@ -46,6 +49,7 @@ export default function CartPage() {
         <Button onClick={() => router.push("/shop")} className="gap-2">
           Browse products
         </Button>
+        {user === null && (<LoginPopover open={showLogin} onOpen={()=> {setShowLogin(true)}} onClose={()=> {setShowLogin(false)}} showTrigger={false}/>)}
       </div>
     );
   }

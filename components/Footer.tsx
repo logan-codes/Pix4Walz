@@ -25,9 +25,9 @@ const Footer: React.FC = () => {
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">Quick links</h3>
           <ul className="space-y-2 text-gray-300">
-            <li><a href="#" className="hover:text-white transition-colors">My account</a></li>
-            <li><a href="#" className="hover:text-white transition-colors">Shopping Cart</a></li>
-            <li><a href="#" className="hover:text-white transition-colors">Wishlist</a></li>
+            <li><a href="/profile" className="hover:text-white transition-colors">My account</a></li>
+            <li><a href="/cart" className="hover:text-white transition-colors">Shopping Cart</a></li>
+            <li><a href="/wishlist" className="hover:text-white transition-colors">Wishlist</a></li>
           </ul>
         </div>
 

@@ -12,6 +12,7 @@ const Navbar: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -97,7 +98,7 @@ const Navbar: React.FC = () => {
             ) : user ? (
               <>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  className="p-2 rounded-full hover:bg-gray-500  transition"
                   aria-label="Profile"
                   onClick={() => router.push("/profile")}
                 >
@@ -127,7 +128,7 @@ const Navbar: React.FC = () => {
               </>
             ) : (
               <>
-                <LoginPopover />
+                <LoginPopover open={showLogin} onOpen={()=> setShowLogin(true)} onClose={()=> setShowLogin(false)} />
                 <SignupPopover />
               </>
             )}
