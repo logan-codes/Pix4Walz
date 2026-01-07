@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useState, useEffect, MouseEvent } from "react";
+import { Fragment, useState, useEffect, MouseEvent, KeyboardEvent } from "react";
+import { motion } from "framer-motion";
 import { Heart, Search, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -45,6 +46,10 @@ export default function ProductsSection({
 }: ProductsSectionProps) {
   const [sortBy, setSortBy] = useState("default");
   const [searchQuery, setSearchQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -62,6 +67,48 @@ export default function ProductsSection({
     addToCart,
     pendingProductId: pendingCartProductId,
   } = useCart();
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (inputValue.trim().length > 0) {
+        try {
+          const res = await fetch(
+            `/api/products?q=${encodeURIComponent(inputValue)}&limit=5&page=1&sort=name`
+          );
+          const data = await res.json();
+          if (Array.isArray(data?.items)) {
+            setSuggestions(data.items);
+            setShowSuggestions(true);
+          } else {
+            setSuggestions([]);
+            setShowSuggestions(false);
+          }
+        } catch (e) {
+          console.error(e);
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setSearchQuery(inputValue);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (name: string) => {
+    setInputValue(name);
+    setSearchQuery(name);
+    setShowSuggestions(false);
+    setIsFocused(false);
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -156,20 +203,20 @@ export default function ProductsSection({
   })();
 
   return (
-    <div className="bg-white rounded-lg">
+    <div className="bg-card rounded-lg border border-border">
       
 
       {/* Header */}
-      <div className="sticky top-16 z-10 bg-white px-4 sm:px-6 lg:px-8 py-4 border-b">
+      <div className="sticky top-16 z-10 bg-card/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-4 border-b border-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
               {page}
             </h1>
             {category && (
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Showing results for{" "}
-                <span className="font-semibold">{category}</span>
+                <span className="font-semibold text-foreground">{category}</span>
               </p>
             )}
           </div>
@@ -177,23 +224,39 @@ export default function ProductsSection({
           <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
             <div className="relative w-full sm:w-auto max-w-xs">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 size={18}
               />
               <input
                 type="text"
                 placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 w-full"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setTimeout(() => setIsFocused(false), 100)}
+                className="pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full placeholder:text-muted-foreground"
               />
+              {isFocused && showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden">
+                  {suggestions.map((suggestion) => (
+                    <div
+                      key={suggestion.id}
+                      className="px-4 py-2 hover:bg-accent hover:text-accent-foreground cursor-pointer text-sm"
+                      onMouseDown={() => handleSuggestionClick(suggestion.name)}
+                    >
+                      {suggestion.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border-none text-sm text-gray-700 bg-white cursor-pointer focus:outline-none"
+                className="px-4 py-2 border border-border rounded-lg text-sm text-foreground bg-background cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="default">Default sorting</option>
                 <option value="price-low">Price: Low to High</option>
@@ -208,36 +271,40 @@ export default function ProductsSection({
       {/* Products */}
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
-          <div className="text-center text-gray-500">Loading...</div>
+          <div className="text-center text-muted-foreground">Loading...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((p) => (
-              <div
+            {products.map((p, index) => (
+              <motion.div
                 key={p.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -10, transition: { duration: 0.2 } }}
                 onClick={() => {
                   router.push(`/shop/${p.id}`);
                 }}
-                className="group relative"
+                className="group relative border border-border/50 rounded-2xl p-3 bg-card/30 backdrop-blur-md shadow-lg hover:shadow-2xl hover:border-primary/50 transition-colors duration-300"
               >
-                <div className="relative bg-accent rounded-lg overflow-hidden aspect-square mb-4">
+                <div className="relative rounded-xl overflow-hidden aspect-square mb-4 bg-muted/20">
                   <img
                     src={p.image}
                     alt={p.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   {p.onSale && (
-                    <div className="absolute top-4 left-4 bg-orange-400 text-white text-xs font-bold px-3 py-1 rounded">
+                    <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded shadow-md">
                       SALE!
                     </div>
                   )}
                   {p.outOfStock && (
-                    <div className="absolute top-4 right-4 bg-gray-900 text-white text-xs font-medium px-3 py-1 rounded">
+                    <div className="absolute top-3 right-3 bg-destructive text-destructive-foreground text-xs font-bold px-3 py-1 rounded shadow-md">
                       OUT OF STOCK
                     </div>
                   )}
                   <button
                     type="button"
-                    className="absolute bottom-4 right-4 bg-white text-gray-800 p-3 rounded-full hover:bg-gray-100 transition-colors shadow"
+                    className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm text-foreground p-2 rounded-full hover:bg-secondary transition-colors shadow-sm border border-border/50"
                     aria-label="Toggle wishlist"
                     aria-pressed={wishlistIds.has(p.id)}
                     onClick={(e) => handleWishlistToggle(e, p.id)}
@@ -248,35 +315,35 @@ export default function ProductsSection({
                       className={
                         wishlistIds.has(p.id)
                           ? "text-red-500 fill-red-500"
-                          : "text-gray-700"
+                          : "text-muted-foreground"
                       }
                     />
                   </button>
                 </div>
                 <div>
-                  <h3 className="text-gray-900 text-base mb-2 group-hover:text-gray-600">
+                  <h3 className="text-foreground font-medium text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
                     {p.name}
                   </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-4">
                     {p.onSale ? (
-                      <div>
-                        <span className="text-gray-400 line-through text-sm">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-muted-foreground line-through text-sm">
                           ₹{p.originalPrice.toFixed(2)}
                         </span>
-                        <span className="text-gray-900 font-semibold text-lg ml-1">
+                        <span className="text-primary font-bold text-xl">
                           ₹{p.salePrice.toFixed(2)}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-gray-900 font-semibold text-lg">
+                      <span className="text-primary font-bold text-xl">
                         ₹{p.originalPrice.toFixed(2)}
                       </span>
                     )}
                   </div>
-                  <div className="mt-4 flex gap-2">
+                  <div className="flex gap-2">
                     <button
                       type="button"
-                      className="flex-1 rounded-full bg-gray-900 text-white py-2 text-sm font-semibold hover:bg-gray-800 transition disabled:opacity-60"
+                      className="flex-1 rounded-lg bg-primary text-primary-foreground py-2.5 text-sm font-semibold hover:bg-primary/90 transition shadow-lg hover:shadow-primary/20 disabled:opacity-60"
                       onClick={(e) => handleAddToCart(e, p.id)}
                       disabled={pendingCartProductId === p.id || p.outOfStock}
                     >
@@ -284,21 +351,21 @@ export default function ProductsSection({
                     </button>
                     <button
                       type="button"
-                      className="p-2 rounded-full border border-gray-200 hover:bg-gray-100 transition disabled:opacity-60"
+                      className="p-2.5 rounded-lg border border-border hover:bg-secondary transition disabled:opacity-60 text-foreground"
                       onClick={(e) => handleAddToCart(e, p.id)}
                       aria-label="Quick add to cart"
                       disabled={pendingCartProductId === p.id || p.outOfStock}
                     >
                       <ShoppingCart
-                        size={18}
+                        size={20}
                         className={
-                          p.outOfStock ? "text-gray-400" : "text-gray-700"
+                          p.outOfStock ? "text-muted-foreground" : "text-foreground"
                         }
                       />
                     </button>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

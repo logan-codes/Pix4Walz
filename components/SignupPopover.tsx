@@ -61,7 +61,7 @@ export default function SignupPopover() {
       <DialogContent className="max-w-sm p-6 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-semibold">Sign Up</DialogTitle>
-          <DialogDescription className="text-center text-gray-500">
+          <DialogDescription className="text-center text-muted-foreground">
             Create an account to start shopping
           </DialogDescription>
         </DialogHeader>
@@ -94,15 +94,15 @@ export default function SignupPopover() {
           <Button
             onClick={handleSignup}
             disabled={loading}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {loading ? <Loader2 size={18} className="animate-spin" /> : "Sign Up"}
           </Button>
         </DialogFooter>
 
-        <p className="text-center text-sm text-gray-500 mt-2">
+        <p className="text-center text-sm text-muted-foreground mt-2">
           Already have an account?{" "}
-          <span className="text-orange-500 cursor-pointer hover:underline">
+          <span className="text-primary cursor-pointer hover:underline">
             Login
           </span>
         </p>

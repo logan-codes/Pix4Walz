@@ -53,20 +53,20 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <div className="bg-card p-8 rounded-lg shadow-sm">
-            <h1 className="text-4xl font-bold text-white mb-4">
+          <div className="bg-card p-8 rounded-lg shadow-sm border border-border">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
               We're here for you
             </h1>
-            <p className="text-gray-300 mb-8">Our friendly team is always here to chat.</p>
+            <p className="text-muted-foreground mb-8">Our friendly team is always here to chat.</p>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Your name <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Your name <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -74,13 +74,13 @@ export default function ContactPage() {
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none disabled:bg-gray-100"
+                  className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none disabled:bg-muted"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Your number <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Your number <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
@@ -88,13 +88,13 @@ export default function ContactPage() {
                   value={formData.number}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none disabled:bg-gray-100"
+                  className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none disabled:bg-muted"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Your message <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Your message <span className="text-destructive">*</span>
                 </label>
                 <textarea
                   name="message"
@@ -102,7 +102,7 @@ export default function ContactPage() {
                   onChange={handleChange}
                   disabled={isSubmitting}
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none disabled:bg-gray-100"
+                  className="w-full px-4 py-3 bg-background border border-border text-foreground rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none disabled:bg-muted"
                 />
               </div>
 
@@ -110,10 +110,10 @@ export default function ContactPage() {
                 <div
                   className={`p-4 rounded-md ${
                     submitStatus.includes("successfully")
-                      ? "bg-green-50 text-green-800 border border-green-200"
+                      ? "bg-green-900/20 text-green-400 border border-green-800"
                       : submitStatus.includes("Error") || submitStatus.includes("Failed")
-                      ? "bg-red-50 text-red-800 border border-red-200"
-                      : "bg-yellow-50 text-yellow-800 border border-yellow-200"
+                      ? "bg-destructive/20 text-destructive-foreground border border-destructive"
+                      : "bg-yellow-900/20 text-yellow-400 border border-yellow-800"
                   }`}
                 >
                   {submitStatus}
@@ -123,7 +123,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-8 rounded-md transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-8 rounded-md transition-colors duration-200 disabled:bg-muted disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Sending..." : "Submit"}
               </button>
@@ -132,9 +132,9 @@ export default function ContactPage() {
 
           {/* Store Info */}
           <div className="space-y-6">
-            <div className="bg-card p-8 rounded-lg shadow-sm">
-              <h2 className="text-3xl font-bold text-white mb-6">Store Location</h2>
-              <p className="text-gray-300 leading-relaxed">
+            <div className="bg-card p-8 rounded-lg shadow-sm border border-border">
+              <h2 className="text-3xl font-bold text-foreground mb-6">Store Location</h2>
+              <p className="text-muted-foreground leading-relaxed">
                 3/183 NAVAMARATHUPATTI, SULLERUMBU POST, DINDIGUL, Tamilnadu 624710.
               </p>
             </div>

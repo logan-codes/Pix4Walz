@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -39,24 +40,25 @@ const CategoriesSection: React.FC = () => {
   const skeletonCount = 4;
 
   return (
-    <section className="py-12 px-6 bg-background">
-      <h2 className="text-4xl font-bold text-center mb-12 text-foreground ">Categories</h2>
+    <section className="py-12 px-6">
+      <h2 className="text-4xl font-bold text-center mb-12 text-foreground tracking-tight">Categories</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {isLoading
           ? Array.from({ length: skeletonCount }).map((_, index) => (
               <div
                 key={index}
-                className="relative rounded-2xl overflow-hidden shadow-lg animate-pulse bg-gray-200 h-80"
+                className="relative rounded-2xl overflow-hidden shadow-lg animate-pulse bg-muted h-80"
               />
             ))
           : categories.map((cat, index) => (
-              <div
+              <motion.div
                 key={cat.id}
-                className="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group"
-                style={{
-                  animation: `fadeIn 0.6s ease-out ${index * 0.1}s both`,
-                }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -10, transition: { duration: 0.2 } }}
+                className="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 group border border-border/50"
               >
                 <Link href={`/shop?category=${encodeURIComponent(cat.name)}`} className="absolute inset-0 z-10" aria-label={cat.name} />
                 <div className="relative h-40 overflow-hidden">
@@ -79,16 +81,9 @@ const CategoriesSection: React.FC = () => {
                 </div>
 
                 
-              </div>
+              </motion.div>
             ))}
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </section>
   );
 };

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Heart, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -21,15 +22,37 @@ const BestSellingSection: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [bestSellingProducts, setBestSellingProducts] = useState<BestSellingProduct[]>([]);
-  const visibleCount = 5;
+  const [visibleCount, setVisibleCount] = useState(4);
   const router = useRouter();
   const { user, wishlistIds, toggleWishlist, pendingProductId } = useWishlist();
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width >= 1536) setVisibleCount(5); // 2xl
+      else if (width >= 1280) setVisibleCount(4); // xl
+      else if (width >= 1024) setVisibleCount(3); // lg
+      else if (width >= 768) setVisibleCount(2); // md
+      else setVisibleCount(1); // sm
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Clamp startIndex when visibleCount changes
+  useEffect(() => {
+    if (bestSellingProducts.length > 0) {
+      setStartIndex((prev) => Math.min(prev, Math.max(0, bestSellingProducts.length - visibleCount)));
+    }
+  }, [visibleCount, bestSellingProducts.length]);
 
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     setStartIndex((prev) => Math.max(prev - 1, 0));
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => setIsAnimating(false), 700);
   };
 
   const handleNext = () => {
@@ -38,10 +61,8 @@ const BestSellingSection: React.FC = () => {
     setStartIndex((prev) =>
       Math.min(prev + 1, bestSellingProducts.length - visibleCount)
     );
-    setTimeout(() => setIsAnimating(false), 500);
+    setTimeout(() => setIsAnimating(false), 700);
   };
-
-  const cardWidth = 256 + 24; // w-64 (256px) + gap-6 (24px)
 
   useEffect(() => {
     const fetchBestSelling = async () => {
@@ -66,84 +87,95 @@ const BestSellingSection: React.FC = () => {
 
   return (
     <section className="py-12 px-6 relative">
-      <h2 className="text-3xl font-bold text-center mb-8">Best Selling</h2>
+      <h2 className="text-3xl font-bold text-center mb-8 text-foreground tracking-tight">Best Selling</h2>
 
       <div className="flex items-center gap-4">
         <button
           onClick={handlePrev}
           disabled={startIndex === 0}
-          className="p-3 rounded-full bg-yellow-400 hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition disabled:opacity-50 disabled:cursor-not-allowed border border-border"
         >
           <ArrowLeft size={20} />
         </button>
 
-        <div className="overflow-hidden w-full">
+        <div className="overflow-hidden w-full -mx-3">
           <div
-            className="flex gap-6 transition-transform duration-700 ease-in-out"
+            className="flex transition-transform duration-700 ease-in-out"
             style={{
-              transform: `translateX(-${startIndex * cardWidth}px)`,
+              transform: `translateX(-${startIndex * (100 / visibleCount)}%)`,
             }}
           >
             {isLoading
               ? Array.from({ length: visibleCount }).map((_, index) => (
                   <div
                     key={index}
-                    className="relative w-64 shrink-0 border rounded-lg overflow-hidden shadow animate-pulse"
+                    className="shrink-0 px-3"
+                    style={{ width: `${100 / visibleCount}%` }}
                   >
-                    <div className="w-full h-48 bg-gray-300"></div>
-                    <div className="p-4 space-y-3">
-                      <div className="h-3 bg-gray-300 rounded w-20"></div>
-                      <div className="h-5 bg-gray-300 rounded w-40"></div>
-                      <div className="flex gap-2">
-                        <div className="h-4 bg-gray-300 rounded w-16"></div>
-                        <div className="h-4 bg-gray-300 rounded w-16"></div>
-                        <div className="ml-auto h-8 w-8 bg-gray-300 rounded-full"></div>
+                    <div className="relative border border-border/50 rounded-lg overflow-hidden shadow-lg animate-pulse bg-card/30 backdrop-blur-sm">
+                      <div className="w-full h-48 bg-muted/50"></div>
+                      <div className="p-4 space-y-3">
+                        <div className="h-3 bg-muted/50 rounded w-20"></div>
+                        <div className="h-5 bg-muted/50 rounded w-40"></div>
+                        <div className="flex gap-2">
+                          <div className="h-4 bg-muted/50 rounded w-16"></div>
+                          <div className="h-4 bg-muted/50 rounded w-16"></div>
+                          <div className="ml-auto h-8 w-8 bg-muted/50 rounded-full"></div>
+                        </div>
+                        <div className="mt-4 w-full h-10 bg-muted rounded"></div>
                       </div>
-                      <div className="mt-4 w-full h-10 bg-gray-300 rounded"></div>
                     </div>
                   </div>
                 ))
-              : bestSellingProducts.map((product) => (
+              : bestSellingProducts.map((product, index) => (
                   <div
                     key={product.id}
+                    className="shrink-0 px-3"
+                    style={{ width: `${100 / visibleCount}%` }}
+                  >
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ y: -10, transition: { duration: 0.2 } }}
                     onClick={() => router.push(`/shop/${product.id}`)}
-                    className="relative w-64 shrink-0 border rounded-2xl overflow-hidden shadow bg-card hover:shadow-lg transition-shadow duration-300 cursor-pointer group"
+                    className="relative w-full border border-border/50 rounded-2xl overflow-hidden shadow-lg bg-card/40 backdrop-blur-md hover:shadow-2xl hover:border-primary/50 transition-colors duration-300 cursor-pointer group"
                   >
                     {product.onSale && !product.outOfStock && (
-                      <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs px-2 py-1 rounded z-10">
+                      <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded z-10 shadow-md">
                         SALE!
                       </span>
                     )}
                     {product.outOfStock && (
-                      <span className="absolute top-12 left-0 right-0 bg-black bg-opacity-60 text-white text-sm text-center py-1 z-10">
+                      <span className="absolute top-12 left-0 right-0 bg-black/80 backdrop-blur-sm text-white text-sm text-center py-1 z-10">
                         OUT OF STOCK
                       </span>
                     )}
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="p-4">
-                      <div className="text-gray-500 text-xs">{product.subtitle}</div>
-                      <h3 className="font-bold text-lg">{product.name}</h3>
+                      <div className="text-muted-foreground text-xs font-medium uppercase tracking-wider">{product.subtitle}</div>
+                      <h3 className="font-bold text-lg text-foreground line-clamp-1">{product.name}</h3>
                       <div className="flex items-center gap-2 mt-2">
                         {product.onSale ? (
-                          <div>
-                            <span className="line-through text-gray-400">
+                          <div className="flex items-baseline gap-2">
+                            <span className="line-through text-muted-foreground text-sm">
                               ₹{product.originalPrice}
                             </span>
-                            <span className="font-semibold text-orange-500 ml-1">
+                            <span className="font-bold text-primary text-lg">
                               ₹{product.salePrice}
                             </span>
                           </div>): (
-                            <span className="font-semibold text-orange-500">
+                            <span className="font-bold text-primary text-lg">
                               ₹{product.originalPrice}
                             </span>
                           )
                         }
                         <button
-                          className="ml-auto p-2 rounded-full bg-white shadow hover:bg-gray-100 transition"
+                          className="ml-auto p-2 rounded-full bg-secondary hover:bg-secondary/80 text-foreground transition shadow-sm"
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (!user) {
@@ -165,7 +197,7 @@ const BestSellingSection: React.FC = () => {
                             className={
                               wishlistIds.has(product.id)
                                 ? "text-red-500 fill-red-500"
-                                : "text-gray-700"
+                                : "text-muted-foreground"
                             }
                           />
                         </button>
@@ -176,12 +208,13 @@ const BestSellingSection: React.FC = () => {
                             e.stopPropagation(); 
                             router.push(`/shop/${product.id}`);
                           }}
-                          className="mt-4 w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition"
+                          className="mt-4 w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:bg-primary/90 transition shadow-lg hover:shadow-primary/20"
                         >
                           Buy Now
                         </button>
                       )}
                     </div>
+                  </motion.div>
                   </div>
                 ))}
           </div>
@@ -190,7 +223,7 @@ const BestSellingSection: React.FC = () => {
         <button
           onClick={handleNext}
           disabled={startIndex >= bestSellingProducts.length - visibleCount}
-          className="p-3 rounded-full bg-yellow-400 hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition disabled:opacity-50 disabled:cursor-not-allowed border border-border shadow-md"
         >
           <ArrowRight size={20} />
         </button>

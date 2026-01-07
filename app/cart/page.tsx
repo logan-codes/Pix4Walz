@@ -28,10 +28,10 @@ export default function CartPage() {
   if (isCartLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-6">
-        <div className="h-10 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-48 bg-muted rounded animate-pulse" />
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, idx) => (
-            <div key={idx} className="h-32 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={idx} className="h-32 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -41,9 +41,9 @@ export default function CartPage() {
   if (!user) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
-        <ShoppingCart size={40} className="mx-auto text-gray-300" />
-        <h1 className="text-2xl font-semibold text-gray-900">Your cart is empty</h1>
-        <p className="text-gray-500">
+        <ShoppingCart size={40} className="mx-auto text-muted-foreground" />
+        <h1 className="text-2xl font-semibold text-muted-foreground">Your cart is empty</h1>
+        <p className="text-muted-foreground">
           Sign in to keep track of the products you plan to buy.
         </p>
         <Button onClick={() => router.push("/shop")} className="gap-2">
@@ -57,15 +57,15 @@ export default function CartPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
       <header>
-        <h1 className="text-3xl font-semibold text-gray-900">Shopping Cart</h1>
-        <p className="text-gray-500 text-sm mt-1">
+        <h1 className="text-3xl font-semibold text-foreground">Shopping Cart</h1>
+        <p className="text-muted-foreground text-sm mt-1">
           {items.length} item{items.length === 1 ? "" : "s"} in your cart
         </p>
       </header>
 
       {items.length === 0 ? (
-        <div className="text-center bg-white border rounded-2xl p-10 space-y-4">
-          <p className="text-gray-600">Your cart is empty right now.</p>
+        <div className="text-center bg-card border border-border rounded-2xl p-10 space-y-4">
+          <p className="text-muted-foreground">Your cart is empty right now.</p>
           <Button onClick={() => router.push("/shop")} className="gap-2">
             Continue shopping
           </Button>
@@ -76,9 +76,9 @@ export default function CartPage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row gap-4 border rounded-2xl p-4 bg-white shadow-sm"
+                className="flex flex-col sm:flex-row gap-4 border border-border rounded-2xl p-4 bg-card shadow-sm"
               >
-                <div className="w-full sm:w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                <div className="w-full sm:w-32 h-32 bg-muted rounded-lg overflow-hidden">
                   {item.product?.image ? (
                     <img
                       src={item.product.image}
@@ -86,7 +86,7 @@ export default function CartPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                       No image
                     </div>
                   )}
@@ -95,7 +95,7 @@ export default function CartPage() {
                 <div className="flex-1">
                   <div className="flex justify-between gap-4">
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-foreground">
                         {item.product?.name ?? "Product"}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">

@@ -132,8 +132,8 @@ export default function ProfilePage() {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="animate-pulse space-y-6">
-          <div className="h-12 bg-gray-200 rounded" />
-          <div className="h-64 bg-gray-200 rounded" />
+          <div className="h-12 bg-muted rounded" />
+          <div className="h-64 bg-muted rounded" />
         </div>
       </div>
     );
@@ -141,7 +141,7 @@ export default function ProfilePage() {
 
   if (authError) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10 text-center text-gray-600">
+      <div className="max-w-2xl mx-auto px-4 py-10 text-center text-muted-foreground">
         <p>{authError}</p>
           <div className="mt-6 flex justify-center">
             <LoginPopover
@@ -157,11 +157,11 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-      <section className="bg-white shadow-sm rounded-2xl p-6 border">
+      <section className="bg-card shadow-sm rounded-2xl p-6 border border-border">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">My Profile</h1>
-            <p className="text-gray-500 text-sm">
+            <h1 className="text-2xl font-semibold text-foreground">My Profile</h1>
+            <p className="text-muted-foreground text-sm">
               Manage your personal information and contact details.
             </p>
           </div>
@@ -172,11 +172,11 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Email</label>
+            <label className="text-sm font-medium text-muted-foreground">Email</label>
             <Input value={profile?.email ?? ""} disabled />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Name</label>
+            <label className="text-sm font-medium text-muted-foreground">Name</label>
             <Input
               value={formState.name}
               onChange={(e) =>
@@ -186,7 +186,7 @@ export default function ProfilePage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Phone</label>
+            <label className="text-sm font-medium text-muted-foreground">Phone</label>
             <Input
               value={formState.phone}
               onChange={(e) =>
@@ -196,7 +196,7 @@ export default function ProfilePage() {
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-600">
+            <label className="text-sm font-medium text-muted-foreground">
               Shipping address
             </label>
             <textarea
@@ -204,44 +204,44 @@ export default function ProfilePage() {
               onChange={(e) =>
                 setFormState((prev) => ({ ...prev, address: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 min-h-[100px]"
+              className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
               placeholder="Street, City, ZIP, Country"
             />
           </div>
         </div>
       </section>
 
-      <section className="bg-white shadow-sm rounded-2xl p-6 border">
+      <section className="bg-card shadow-sm rounded-2xl p-6 border border-border">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Order history</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-xl font-semibold text-foreground">Order history</h2>
+          <p className="text-sm text-muted-foreground">
             {orders.length} {orders.length === 1 ? "order" : "orders"}
           </p>
         </div>
 
         {orders.length === 0 ? (
-          <p className="text-gray-500 text-sm">No orders yet.</p>
+          <p className="text-muted-foreground text-sm">No orders yet.</p>
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition"
+                className="border border-border rounded-xl p-4 hover:border-muted-foreground transition"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Order #{order.orderNumber}
                     </p>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-sm">
+                    <span className="px-3 py-1 rounded-full bg-muted text-foreground text-sm">
                       {order.status}
                     </span>
-                    <p className="text-lg font-semibold text-gray-900">
+                    <p className="text-lg font-semibold text-foreground">
                       ₹{order.total.toFixed(2)}
                     </p>
                   </div>
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                   {order.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between text-sm text-gray-600"
+                      className="flex items-center justify-between text-sm text-muted-foreground"
                     >
                       <span>
                         {item.product?.name ?? "Item"} × {item.quantity}

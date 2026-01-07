@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
 import { Heart, ArrowRight } from "lucide-react";
+import LoginPopover from "@/components/LoginPopover";
+import { useState } from "react";
 
 export default function WishlistPage() {
   const router = useRouter();
@@ -15,14 +17,15 @@ export default function WishlistPage() {
     toggleWishlist,
     pendingProductId,
   } = useWishlist();
+  const [showLogin, setShowLogin] = useState(true);
 
   if (isWishlistLoading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-6">
-        <div className="h-10 w-40 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-40 bg-muted rounded animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, idx) => (
-            <div key={idx} className="h-72 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={idx} className="h-72 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -32,9 +35,9 @@ export default function WishlistPage() {
   if (!user) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
-        <Heart size={40} className="mx-auto text-gray-300" />
-        <h1 className="text-2xl font-semibold text-gray-900">Sign in to save favorites</h1>
-        <p className="text-gray-500">
+        <Heart size={40} className="mx-auto text-muted-foreground" />
+        <h1 className="text-2xl font-semibold text-muted-foreground">Sign in to save favorites</h1>
+        <p className="text-muted-foreground">
           Create an account or log in to keep track of the products you love.
         </p>
         <div className="flex justify-center gap-4">
@@ -42,6 +45,7 @@ export default function WishlistPage() {
           <Button variant="outline" onClick={() => router.push("/shop")}>
             Browse shop
           </Button>
+          <LoginPopover open={showLogin} onOpen={()=> {setShowLogin(true)}} onClose={()=> {setShowLogin(false)}} showTrigger={false}/>
         </div>
       </div>
     );
@@ -50,8 +54,8 @@ export default function WishlistPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-10">
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold text-gray-900">My Wishlist</h1>
-        <p className="text-gray-500 text-sm">
+        <h1 className="text-3xl font-semibold text-foreground">My Wishlist</h1>
+        <p className="text-muted-foreground text-sm">
           {wishlistItems.length === 0
             ? "You have not saved any items yet."
             : `You have ${wishlistItems.length} item${
@@ -61,8 +65,8 @@ export default function WishlistPage() {
       </header>
 
       {wishlistItems.length === 0 ? (
-        <div className="text-center bg-white border rounded-2xl p-10 space-y-4">
-          <p className="text-gray-600">
+        <div className="text-center bg-card border border-border rounded-2xl p-10 space-y-4">
+          <p className="text-muted-foreground">
             Start adding products you like by tapping the heart icon in the shop.
           </p>
           <Button onClick={() => router.push("/shop")} className="gap-2">
@@ -75,10 +79,10 @@ export default function WishlistPage() {
           {wishlistItems.map((item) => (
             <div
               key={item.id}
-              className="border rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition cursor-pointer"
+              className="border border-border rounded-2xl overflow-hidden bg-card shadow-sm hover:shadow-md transition cursor-pointer"
               onClick={() => router.push(`/shop/${item.productId}`)}
             >
-              <div className="relative aspect-square bg-gray-50">
+              <div className="relative aspect-square bg-muted">
                 {item.product?.image ? (
                   <img
                     src={item.product.image}
@@ -86,12 +90,12 @@ export default function WishlistPage() {
                     className="object-cover w-full h-full"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                     No image
                   </div>
                 )}
                 <button
-                  className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow hover:bg-white"
+                  className="absolute top-3 right-3 bg-card/90 rounded-full p-2 shadow hover:bg-card text-foreground"
                   onClick={async (event) => {
                     event.stopPropagation();
                     await toggleWishlist(item.productId);

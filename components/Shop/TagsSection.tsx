@@ -90,13 +90,13 @@ const TagsSection: React.FC<TagsSectionProps> = ({ selectedTag, onSelect }) => {
                 Array.from({ length: 8 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-6 w-16 rounded-full bg-gray-200 animate-pulse"
+                    className="h-6 w-16 rounded-full bg-muted animate-pulse"
                   />
                 ))
               ) : (
                 <>
                   <Badge
-                    variant={selectedTag ? "secondary" : "default"}
+                    variant={selectedTag ? "secondary" : "outline"}
                     className="cursor-pointer inline-flex whitespace-nowrap"
                     onClick={() => handleClick(null)}
                   >

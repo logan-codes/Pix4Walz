@@ -60,21 +60,21 @@ const Navbar: React.FC = () => {
   }
 ];
   return (
-    <nav className="w-screen bg-white shadow-sm sticky top-0 z-50">
+    <nav className="w-screen bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
+              className="p-2 rounded-md text-muted-foreground hover:bg-accent focus:outline-none"
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
           
           {/* Logo */}
-          <div className="shrink-0 text-2xl font-bold text-gray-800">
+          <div className="shrink-0 text-2xl font-bold text-foreground">
             Pix4Walz
           </div>
 
@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
               <a
                 key={link.id}
                 href={link.href}
-                className="text-primary hover:text-muted-foreground transition-colors font-medium"
+                className="text-foreground/80 hover:text-foreground transition-colors font-medium"
               >
                 {link.name}
               </a>
@@ -94,25 +94,25 @@ const Navbar: React.FC = () => {
           {/* Auth Section */}
           <div className="flex items-center gap-3">
             {authLoading ? (
-              <div className="w-24 h-8 rounded-full bg-gray-200 animate-pulse" />
+              <div className="w-24 h-8 rounded-full bg-muted animate-pulse" />
             ) : user ? (
               <>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-500  transition"
+                  className="p-2 rounded-full hover:bg-accent hover:text-accent-foreground transition"
                   aria-label="Profile"
                   onClick={() => router.push("/profile")}
                 >
                   <UserIcon size={20} />
                 </button>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  className="p-2 rounded-full hover:bg-accent hover:text-accent-foreground transition"
                   aria-label="Favorites"
                   onClick={() => router.push("/wishlist")}
                 >
                   <Heart size={20} />
                 </button>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                  className="p-2 rounded-full hover:bg-accent hover:text-accent-foreground transition"
                   aria-label="Cart"
                   onClick={() => router.push("/cart")}
                 >
@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-full hover:bg-gray-100 transition text-red-500"
+                  className="p-2 rounded-full hover:bg-destructive/10 hover:text-destructive transition text-destructive"
                   aria-label="Logout"
                 >
                   <LogOut size={20} />
@@ -139,13 +139,13 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white shadow-md border-t">
-          <div className="flex flex-col items-start px-4 py-3 space-y-3">
+        <div className="md:hidden bg-background/100 backdrop-blur-md border-t border-border shadow-lg animate-in slide-in-from-top-5 duration-300">
+          <div className="flex flex-col items-start px-4 py-4 space-y-4">
             {navLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.href}
-                className="text-gray-700 font-medium hover:text-gray-900 w-full"
+                className="text-foreground/80 font-medium hover:text-primary hover:bg-accent/50 w-full p-2 rounded-md transition-all"
               >
                 {link.name}
               </a>

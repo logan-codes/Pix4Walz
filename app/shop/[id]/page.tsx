@@ -54,13 +54,13 @@ export default function ProductPage() {
   }, [pathname, router]);
 
     if (!product) {
-        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+        return <div className="flex justify-center items-center h-screen text-foreground bg-background">Loading...</div>;
     }
 
     return (
         <div className="max-w-6xl mx-auto py-10 px-6 grid md:grid-cols-2 gap-10">
         {/* Product Image */}
-        <div className="w-full rounded-2xl overflow-hidden bg-gray-100">
+        <div className="w-full rounded-2xl overflow-hidden bg-muted">
             <AspectRatio ratio={1}>
             <img
                 src={product.image}
@@ -72,14 +72,14 @@ export default function ProductPage() {
 
         {/* Product Details */}
         <div>
-            <h1 className="text-3xl font-semibold mb-3">{product.name}</h1>
+            <h1 className="text-3xl font-semibold mb-3 text-foreground">{product.name}</h1>
 
             {/* Price */}
             <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl font-bold text-orange-500">
+            <span className="text-2xl font-bold text-foreground">
                 ₹{product.salePrice.toLocaleString()}
             </span>
-            <span className="line-through text-gray-400">
+            <span className="line-through text-muted-foreground">
                 ₹{product.originalPrice.toLocaleString()}
             </span>
             </div>
@@ -87,7 +87,7 @@ export default function ProductPage() {
             {/* Wishlist */}
             <button
               type="button"
-              className="flex items-center gap-2 text-gray-600 mb-5 hover:text-red-500 transition"
+              className="flex items-center gap-2 text-muted-foreground mb-5 hover:text-destructive transition"
               onClick={async () => {
                 if (!product) return;
                 if (!wishlistUser) {
@@ -114,14 +114,14 @@ export default function ProductPage() {
             {/* Quantity Selector */}
             <div className="flex items-center gap-3 mb-6">
             <button
-                className="border px-3 py-1 rounded"
+                className="border border-border px-3 py-1 rounded text-foreground hover:bg-accent transition"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
             >
                 -
             </button>
-            <span className="text-lg">{quantity}</span>
+            <span className="text-lg text-foreground">{quantity}</span>
             <button
-                className="border px-3 py-1 rounded"
+                className="border border-border px-3 py-1 rounded text-foreground hover:bg-accent transition"
                 onClick={() => setQuantity(quantity + 1)}
             >
                 +
@@ -135,8 +135,8 @@ export default function ProductPage() {
               disabled={product.outOfStock || pendingCartProductId === product.id}
               className={`flex items-center gap-2 px-6 py-3 rounded-full transition ${
                 product.outOfStock
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-orange-500 text-white hover:bg-orange-600"
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
               }`}
               onClick={async () => {
                 if (!product || product.outOfStock) return;
@@ -181,15 +181,15 @@ export default function ProductPage() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-block text-green-600 font-medium hover:underline"
+            className="mt-6 inline-block text-green-500 font-medium hover:underline"
             >
             <FaWhatsapp />
             </a>
 
             {/* Reviews Section */}
-            <div className="mt-10 border-t pt-5">
-            <h3 className="text-lg font-medium mb-2">Reviews (0)</h3>
-            <p className="text-gray-500">No reviews yet.</p>
+            <div className="mt-10 border-t border-border pt-5">
+            <h3 className="text-lg font-medium mb-2 text-foreground">Reviews (0)</h3>
+            <p className="text-muted-foreground">No reviews yet.</p>
             </div>
         </div>
         </div>

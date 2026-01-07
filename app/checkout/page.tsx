@@ -78,10 +78,10 @@ export default function CheckoutPage() {
   if (isCartLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-6">
-        <div className="h-10 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-10 w-48 bg-muted rounded animate-pulse" />
         <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, idx) => (
-            <div key={idx} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={idx} className="h-24 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -91,9 +91,9 @@ export default function CheckoutPage() {
   if (!user) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
-        <ShoppingCart size={40} className="mx-auto text-gray-300" />
-        <h1 className="text-2xl font-semibold text-gray-900">Sign in to checkout</h1>
-        <p className="text-gray-500">You need an account to place orders.</p>
+        <ShoppingCart size={40} className="mx-auto text-muted-foreground" />
+        <h1 className="text-2xl font-semibold text-foreground">Sign in to checkout</h1>
+        <p className="text-muted-foreground">You need an account to place orders.</p>
         <Button onClick={() => router.push("/shop")} className="gap-2">
           Browse products
         </Button>
